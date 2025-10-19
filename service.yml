@@ -1,0 +1,17 @@
+# apiVersion: serving.knative.dev/v1
+# kind: Service
+# metadata:
+#     name: forum-api
+#     namespace: forum-api-468412
+# spec:
+#     template:
+#         metadata:
+#         spec:
+#             containers:
+#                 - image: europe-west4-docker.pkg.dev/forum-api-468412/forumapi-repo/forum-api
+#                   env:
+#                       - name: CLOUD_DB_URL
+#                         valueFrom:
+#                             secretKeyRef:
+#                                 name: cloud-db-url
+#                                 key: latest

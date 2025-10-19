@@ -1,0 +1,230 @@
+openapi: 3.0.0
+info:
+    title: Forum REST API
+    version: 1.0.0
+
+servers:
+    - url: http://localhost:3000/api
+
+paths:
+    /news:
+        get:
+            summary: Gets all news
+            tags: [News]
+            responses:
+                200:
+                    description: Ok - Successfully retrieved news
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/GetAllNewsResponse"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+        post:
+            summary: Creates a new news
+            tags: [News]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/CreateNewsRequest"
+            responses:
+                201:
+                    description: Created - news successfully created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SimpleNews"
+                400:
+                    description: Bad Request - invalid data
+                    content:
+                        application/json:
+                            examples:
+                                invalidTitle:
+                                    summary: Invalid title
+                                    value:
+                                        message: "News title should be at least 3 characters long!"
+                                invalidContent:
+                                    summary: Invalid content
+                                    value:
+                                        message: "News content should be at least 3 characters long!"
+                500:
+                    description: Internal Server Error - server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+    /news/{newsId}:
+        get:
+            summary: Gets a news by ID
+            tags: [News]
+            parameters:
+                - in: path
+                  name: newsId
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the news (valid ObjectId - 24 characters)
+            responses:
+                200:
+                    description: Ok - Successfully retrieved news
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SimpleNews"
+                400:
+                    description: Bad Request - invalid ID
+                    content:
+                        application/json:
+                            example:
+                                message: "Id must be a valid MongooseDB ObjectId!"
+                404:
+                    description: Not Found - news does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "There is no news with this id!"
+                500:
+                    description: Internal Server Error - server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+        put:
+            summary: Updates a news by ID
+            tags: [News]
+            parameters:
+                - in: path
+                  name: newsId
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the news (valid ObjectId - 24 characters)
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/EditNewsRequest"
+            responses:
+                201:
+                    description: Created - news successfully updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SimpleNews"
+                400:
+                    description: Bad Request - invalid data
+                    content:
+                        application/json:
+                            examples:
+                                invalidId:
+                                    summary: Invalid ID
+                                    value:
+                                        message: "Id must be a valid MongooseDB ObjectId!"
+                                invalidTitle:
+                                    summary: Invalid title
+                                    value:
+                                        message: "News title should be at least 3 characters long!"
+                                invalidContent:
+                                    summary: Invalid content
+                                    value:
+                                        message: "News content should be at least 3 characters long!"
+                404:
+                    description: Not Found - news does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "News not found!"
+                500:
+                    description: Internal Server Error - server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+        delete:
+            summary: Deletes a news by ID
+            tags: [News]
+            parameters:
+                - in: path
+                  name: newsId
+                  required: true
+                  schema:
+                      type: string
+                  description: ID of the news (valid ObjectId - 24 characters)
+            responses:
+                204:
+                    description: No Content - news successfully deleted
+                400:
+                    description: Bad Request - invalid ID
+                    content:
+                        application/json:
+                            example:
+                                message: "Id must be a valid MongooseDB ObjectId!"
+                404:
+                    description: Not Found - news does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "News not found!"
+                500:
+                    description: Internal Server Error - server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+components:
+    schemas:
+        SimpleNews:
+            type: object
+            properties:
+                _id:
+                    type: string
+                    example: "6833318fd414ea08fac843ec"
+                title:
+                    type: string
+                    example: "News title"
+                content:
+                    type: string
+                    example: "News content"
+                createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-05-25T15:04:47.780Z"
+
+        GetAllNewsResponse:
+            type: array
+            items:
+                $ref: "#/components/schemas/SimpleNews"
+
+        CreateNewsRequest:
+            type: object
+            required:
+                - title
+                - content
+            properties:
+                title:
+                    type: string
+                    example: "New news Title"
+                content:
+                    type: string
+                    example: "New news content"
+
+        EditNewsRequest:
+            type: object
+            required:
+                - title
+                - content
+            properties:
+                title:
+                    type: string
+                    example: "Edited Title"
+                content:
+                    type: string
+                    example: "Edited content"
