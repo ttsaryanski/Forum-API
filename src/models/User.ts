@@ -1,32 +1,69 @@
-// import mongoose, { Schema, Document } from "mongoose";
-// import bcrypt from "bcrypt";
+import { DataTypes, Model } from "sequelize";
+import sequelize from "../config/sequelize.js";
+import bcrypt from "bcrypt";
 
-// export interface IUser extends Document {
-//     email: string;
-//     password: string;
-//     createdAt: Date;
-// }
+interface UserAttributes {
+    id?: number;
+    email: string;
+    password: string;
+    username?: string;
+    role: "user" | "moderator" | "admin";
+    avatar_url?: string;
+    last_login?: Date;
+}
 
-// const UserSchema = new Schema<IUser>({
-//     email: {
-//         type: String,
-//         required: [true, "Email is required!"],
-//         unique: true,
-//         match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address!"],
-//     },
-//     password: {
-//         type: String,
-//         required: [true, "Password is required!"],
-//         minLength: [6, "Password should be at least 6 characters long!"],
-//     },
-//     createdAt: { type: Date, default: Date.now },
-// });
+interface UserInstance extends Model<UserAttributes>, UserAttributes {}
 
-// UserSchema.pre("save", async function () {
-//     if (this.isModified("password")) {
-//         const hash = await bcrypt.hash(this.password, 10);
-//         this.password = hash;
-//     }
-// });
+const User = sequelize.define<UserInstance>(
+    "User",
+    {
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+        },
+        email: {
+            type: DataTypes.STRING(30),
+            allowNull: false,
+            unique: true,
+            validate: { isEmail: true },
+        },
+        password: {
+            type: DataTypes.STRING(60),
+            allowNull: false,
+        },
+        username: {
+            type: DataTypes.STRING(30),
+            unique: true,
+        },
+        role: {
+            type: DataTypes.ENUM("user", "moderator", "admin"),
+            defaultValue: "user",
+        },
+        avatar_url: {
+            type: DataTypes.TEXT,
+        },
+        last_login: {
+            type: DataTypes.DATE,
+        },
+    },
+    {
+        tableName: "users",
+        hooks: {
+            beforeCreate: async (user: UserInstance) => {
+                if (user.password) {
+                    const salt = await bcrypt.genSalt(10);
+                    user.password = await bcrypt.hash(user.password, salt);
+                }
+            },
+            beforeUpdate: async (user: UserInstance) => {
+                if (user.changed("password")) {
+                    const salt = await bcrypt.genSalt(10);
+                    user.password = await bcrypt.hash(user.password, salt);
+                }
+            },
+        },
+    }
+);
 
-// export const User = mongoose.model<IUser>("User", UserSchema);
+export default User;

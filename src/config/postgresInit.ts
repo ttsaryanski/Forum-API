@@ -1,25 +1,18 @@
-import { Sequelize } from "sequelize";
+import sequelize from "./sequelize.js";
 
-const dbName = process.env.POSTGRES_DB || "";
-const dbUser = process.env.POSTGRES_USER || "";
-const dbPassword = process.env.POSTGRES_PASSWORD || "";
+import "../models/User.js";
+import "../models/Theme.js";
+import "../models/Comment.js";
+import "../models/Like.js";
+import "../models/Category.js";
 
-if (!dbName || !dbUser || !dbPassword) {
-    console.error("Missing required database environment variables");
-    process.exit(1);
-}
-
-const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-    host: process.env.PG_HOST || "localhost",
-    port: Number(process.env.PG_PORT || 5432),
-    dialect: "postgres",
-    logging: false,
-});
-
-export default async function postgresInit() {
+export async function postgresInit() {
     try {
         await sequelize.authenticate();
         console.log("Successfully connected to PostgreSQL database!");
+
+        await sequelize.sync({ alter: true });
+        console.log("Models synchronized with the database");
     } catch (error) {
         console.log("Failed to connect to PostgreSQL database!", error);
         process.exit(1);

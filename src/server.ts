@@ -1,6 +1,6 @@
 import app from "./app.js";
 import mongooseInit from "./config/mongooseInit.js";
-import postgresInit from "./config/postgresInit.js";
+import { postgresInit } from "./config/postgresInit.js";
 
 const PORT = 3000;
 const port = process.env.PORT || PORT;
