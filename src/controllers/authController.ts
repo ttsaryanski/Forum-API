@@ -29,16 +29,9 @@ export function authController(authService: AuthServicesTypes) {
                 throw new CustomError(resultData.error.issues[0].message, 400);
             }
 
-            const tokens = await authService.register(resultData.data);
+            const message = await authService.register(resultData.data);
 
-            res.status(201)
-                .cookie("refreshToken", tokens.refreshToken, {
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: "none",
-                    maxAge: 7 * 24 * 60 * 60 * 1000,
-                })
-                .json({ accessToken: tokens.accessToken });
+            res.status(201).json({ message });
         })
     );
 

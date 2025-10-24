@@ -32,10 +32,14 @@ const ThemeCategory = sequelize.define(
 Theme.belongsToMany(Category, {
     through: ThemeCategory,
     foreignKey: "theme_id",
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
 });
 Category.belongsToMany(Theme, {
     through: ThemeCategory,
     foreignKey: "category_id",
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
 });
 
 export { Category, ThemeCategory };

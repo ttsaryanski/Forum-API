@@ -30,13 +30,27 @@ const Comment = sequelize.define(
     }
 );
 
-Comment.belongsTo(User, { as: "author", foreignKey: "author_id" });
+Comment.belongsTo(User, {
+    as: "author",
+    foreignKey: "author_id",
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+});
 User.hasMany(Comment, { foreignKey: "author_id" });
 
-Comment.belongsTo(Theme, { foreignKey: "theme_id" });
+Comment.belongsTo(Theme, {
+    foreignKey: "theme_id",
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+});
 Theme.hasMany(Comment, { foreignKey: "theme_id" });
 
-Comment.belongsTo(Comment, { as: "parent", foreignKey: "parent_comment_id" });
+Comment.belongsTo(Comment, {
+    as: "parent",
+    foreignKey: "parent_comment_id",
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+});
 Comment.hasMany(Comment, { as: "replies", foreignKey: "parent_comment_id" });
 
 export default Comment;

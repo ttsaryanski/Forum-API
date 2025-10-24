@@ -16,9 +16,7 @@ export interface NewsServicesTypes {
 }
 
 export interface AuthServicesTypes {
-    register(
-        data: RegisterUserDataType
-    ): Promise<{ accessToken: string; refreshToken: string }>;
+    register(data: RegisterUserDataType): Promise<string>;
     login(
         data: LoginUserDataType
     ): Promise<{ accessToken: string; refreshToken: string }>;

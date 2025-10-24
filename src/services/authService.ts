@@ -16,9 +16,7 @@ import {
 } from "../validators/user.schema.js";
 
 export const authService: AuthServicesTypes = {
-    async register(
-        data: RegisterUserDataType
-    ): Promise<{ accessToken: string; refreshToken: string }> {
+    async register(data: RegisterUserDataType): Promise<string> {
         const existingEmail = await User.findOne({
             where: { email: data.email },
         });
@@ -39,14 +37,9 @@ export const authService: AuthServicesTypes = {
             role: "user" as const,
         };
 
-        const createdUser = await User.create(userData);
+        await User.create(userData);
 
-        return createAccessTokens({
-            id: createdUser.id!.toString(),
-            email: createdUser.email,
-            username: createdUser.username,
-            role: createdUser.role,
-        });
+        return "User registered successfully!";
     },
 
     async login(

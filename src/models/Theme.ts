@@ -33,7 +33,12 @@ const Theme = sequelize.define(
     }
 );
 
-Theme.belongsTo(User, { as: "author", foreignKey: "author_id" });
+Theme.belongsTo(User, {
+    as: "author",
+    foreignKey: "author_id",
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+});
 User.hasMany(Theme, { foreignKey: "author_id" });
 
 export default Theme;
