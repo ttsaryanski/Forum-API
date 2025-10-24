@@ -6,10 +6,12 @@ interface UserAttributes {
     id?: number;
     email: string;
     password: string;
-    username?: string;
+    username: string;
     role: "user" | "moderator" | "admin";
     avatar_url?: string;
     last_login?: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 interface UserInstance extends Model<UserAttributes>, UserAttributes {}
@@ -29,12 +31,13 @@ const User = sequelize.define<UserInstance>(
             validate: { isEmail: true },
         },
         password: {
-            type: DataTypes.STRING(60),
+            type: DataTypes.STRING,
             allowNull: false,
         },
         username: {
             type: DataTypes.STRING(30),
             unique: true,
+            allowNull: false,
         },
         role: {
             type: DataTypes.ENUM("user", "moderator", "admin"),
@@ -42,6 +45,7 @@ const User = sequelize.define<UserInstance>(
         },
         avatar_url: {
             type: DataTypes.TEXT,
+            defaultValue: null,
         },
         last_login: {
             type: DataTypes.DATE,

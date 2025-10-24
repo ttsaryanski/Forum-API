@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { appLimiter } from "../utils/rateLimiter.js";
 import { swaggerUi, swaggerDocument } from "../swagger.js";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -18,6 +19,7 @@ export default function expressInit(app: Application) {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
+    app.use(appLimiter);
     app.use(
         cors({
             origin: allowedOrigins,

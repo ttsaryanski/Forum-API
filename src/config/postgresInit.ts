@@ -5,6 +5,7 @@ import "../models/Theme.js";
 import "../models/Comment.js";
 import "../models/Like.js";
 import "../models/Category.js";
+import "../models/RefreshToken.js";
 
 export async function postgresInit() {
     try {

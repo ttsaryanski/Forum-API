@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import { newsController } from "../../controllers/newsController.js";
-import { newsService } from "../../services/newsService.js";
+import { newsController } from "../controllers/newsController.js";
+import { newsService } from "../services/newsService.js";
 
 const router = Router();
 

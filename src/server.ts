@@ -19,15 +19,3 @@ async function startServer() {
 }
 
 startServer();
-
-// mongooseInit().then(() => {
-//     app.listen(port, () =>
-//         console.log(`Server running on http://localhost:${port}`)
-//     );
-// });
-
-// postgresInit().then(() => {
-//     app.listen(port, () =>
-//         console.log(`Server running on http://localhost:${port}`)
-//     );
-// });

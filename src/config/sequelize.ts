@@ -1,4 +1,6 @@
 import { Sequelize } from "sequelize";
+import { config } from "dotenv";
+config();
 
 const dbName = process.env.POSTGRES_DB || "";
 const dbUser = process.env.POSTGRES_USER || "";
