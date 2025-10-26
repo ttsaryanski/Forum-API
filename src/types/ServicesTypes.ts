@@ -22,6 +22,8 @@ export interface AuthServicesTypes {
     ): Promise<{ accessToken: string; refreshToken: string }>;
     logout(token: { accessToken: string; refreshToken: string }): Promise<void>;
     getUserById(id: string): Promise<UserResponseType>;
+    verifyEmail(token: string): Promise<string>;
+    resendVerificationEmail(email: string): Promise<string>;
 }
 
 export interface GCSServiceTypes {

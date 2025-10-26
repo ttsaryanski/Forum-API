@@ -114,5 +114,26 @@ export function authController(authService: AuthServicesTypes) {
         })
     );
 
+    router.get("/verify-email/:token", async (req, res) => {
+        const token = req.params.token;
+
+        if (!token) {
+            throw new CustomError("Verification token is required", 400);
+        }
+        const message = await authService.verifyEmail(token);
+
+        res.status(200).redirect("http://localhost:5173/auth/verified");
+    });
+
+    router.post("/resend-email", async (req, res) => {
+        const email = req.query.email as string;
+        if (!email) {
+            throw new CustomError("Email is required", 400);
+        }
+        const message = await authService.resendVerificationEmail(email);
+
+        res.status(200).json({ message });
+    });
+
     return router;
 }

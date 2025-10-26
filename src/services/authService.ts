@@ -1,4 +1,6 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 import { signJwt } from "../lib/jwt.js";
 
 import { gcsService } from "./gcsService.js";
@@ -14,6 +16,14 @@ import {
     RegisterUserDataType,
     LoginUserDataType,
 } from "../validators/user.schema.js";
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
 export const authService: AuthServicesTypes = {
     async register(data: RegisterUserDataType): Promise<string> {
@@ -39,7 +49,23 @@ export const authService: AuthServicesTypes = {
 
         await User.create(userData);
 
-        return "User registered successfully!";
+        const token = crypto.randomBytes(32).toString("hex");
+        await User.update(
+            { verificationToken: token },
+            { where: { email: data.email } }
+        );
+
+        const verificationLink = `${process.env.CLIENT_URL}/api/auth/verify-email/${token}`;
+        await transporter.sendMail({
+            from: `"Forum App" <${process.env.EMAIL_USER}>`,
+            to: data.email,
+            subject: "Confirm your email address",
+            html: `<p>Hello ${data.username},</p>
+         <p>Please click the link below to verify your email:</p>
+         <a href="${verificationLink}">${verificationLink}</a>`,
+        });
+
+        return "Registration successful. Please check your email to verify your account!";
     },
 
     async login(
@@ -51,6 +77,10 @@ export const authService: AuthServicesTypes = {
 
         if (!user) {
             throw new CustomError("User does not exist!", 404);
+        }
+
+        if (!user.isVerified) {
+            throw new CustomError("Please verify your email first!", 403);
         }
 
         const isValid = await bcrypt.compare(data.password, user.password);
@@ -95,6 +125,52 @@ export const authService: AuthServicesTypes = {
             createdAt: user.createdAt!,
             updatedAt: user.updatedAt!,
         };
+    },
+
+    async verifyEmail(token: string): Promise<string> {
+        const user = await User.findOne({
+            where: { verificationToken: token },
+        });
+
+        if (!user) {
+            throw new CustomError("Invalid verification token!", 400);
+        }
+
+        user.isVerified = true;
+        user.verificationToken = null;
+        await user.save();
+
+        return "Email verified successfully!";
+    },
+
+    async resendVerificationEmail(email: string): Promise<string> {
+        const user = await User.findOne({
+            where: { email: email },
+        });
+
+        if (!user) {
+            throw new CustomError("User with this email does not exist!", 404);
+        }
+
+        if (user.isVerified) {
+            throw new CustomError("Email is already verified.", 400);
+        }
+
+        const token = crypto.randomBytes(32).toString("hex");
+        user.verificationToken = token;
+        await user.save();
+
+        const verificationLink = `${process.env.CLIENT_URL}/api/auth/verify-email/${token}`;
+        await transporter.sendMail({
+            from: `"Forum App" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: "Confirm your email address",
+            html: `<p>Hello ${user.username},</p>
+         <p>Please click the link below to verify your email:</p>
+         <a href="${verificationLink}">${verificationLink}</a>`,
+        });
+
+        return "Verification email resent. Please check your inbox.";
     },
 };
 

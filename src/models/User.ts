@@ -12,6 +12,8 @@ interface UserAttributes {
     last_login?: Date;
     createdAt?: Date;
     updatedAt?: Date;
+    isVerified?: boolean;
+    verificationToken?: string | null;
 }
 
 interface UserInstance extends Model<UserAttributes>, UserAttributes {}
@@ -50,6 +52,8 @@ const User = sequelize.define<UserInstance>(
         last_login: {
             type: DataTypes.DATE,
         },
+        isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
+        verificationToken: { type: DataTypes.STRING, defaultValue: null },
     },
     {
         tableName: "users",
