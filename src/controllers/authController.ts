@@ -16,6 +16,10 @@ import {
 } from "../validators/user.schema.js";
 
 //import upload from "../utils/upload/multerStorage.js";
+import { isDev } from "../config/expressInit.js";
+const clientUrl = isDev
+    ? "http://localhost:5173"
+    : "https://forum-1ab65.web.app";
 
 export function authController(authService: AuthServicesTypes) {
     const router = Router();
@@ -118,17 +122,17 @@ export function authController(authService: AuthServicesTypes) {
         const token = req.params.token;
 
         if (!token) {
-            throw new CustomError("Verification token is required", 400);
+            throw new CustomError("Verification token is required!", 400);
         }
-        const message = await authService.verifyEmail(token);
+        await authService.verifyEmail(token);
 
-        res.status(200).redirect("http://localhost:5173/auth/verified");
+        res.status(200).redirect(`${clientUrl}/auth/verified`);
     });
 
     router.post("/resend-email", async (req, res) => {
         const email = req.query.email as string;
         if (!email) {
-            throw new CustomError("Email is required", 400);
+            throw new CustomError("Email is required!", 400);
         }
         const message = await authService.resendVerificationEmail(email);
 

@@ -1,17 +1,72 @@
-# apiVersion: serving.knative.dev/v1
-# kind: Service
-# metadata:
-#     name: forum-api
-#     namespace: forum-api-468412
-# spec:
-#     template:
-#         metadata:
-#         spec:
-#             containers:
-#                 - image: europe-west4-docker.pkg.dev/forum-api-468412/forumapi-repo/forum-api
-#                   env:
-#                       - name: CLOUD_DB_URL
-#                         valueFrom:
-#                             secretKeyRef:
-#                                 name: cloud-db-url
-#                                 key: latest
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+    name: forum-api
+    namespace: forum-restapi
+spec:
+    template:
+        metadata:
+        spec:
+            containers:
+                - image: europe-west4-docker.pkg.dev/forum-restapi/forumapi-repo/forum-api
+                  env:
+                      - name: CLOUD_DB_URL
+                        valueFrom:
+                            secretKeyRef:
+                                name: cloud-db-url
+                                key: latest
+                      - name: JWT_SECRET
+                        valueFrom:
+                            secretKeyRef:
+                                name: jwt-secret
+                                key: latest
+                      - name: JWT_REFRESH_SECRET
+                        valueFrom:
+                            secretKeyRef:
+                                name: jwt-refresh-secret
+                                key: latest
+                      - name: POSTGRES_USER
+                        valueFrom:
+                            secretKeyRef:
+                                name: postgres-user
+                                key: latest
+                      - name: POSTGRES_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: postgres-password
+                                key: latest
+                      - name: POSTGRES_DB
+                        valueFrom:
+                            secretKeyRef:
+                                name: postgres-db
+                                key: latest
+                      - name: PG_HOST
+                        valueFrom:
+                            secretKeyRef:
+                                name: pg-host
+                                key: latest
+                      - name: PG_PORT
+                        valueFrom:
+                            secretKeyRef:
+                                name: pg-port
+                                key: latest
+                      - name: GCS_BUCKET_NAME
+                        valueFrom:
+                            secretKeyRef:
+                                name: gcs-bucket-name
+                                key: latest
+                      - name: EMAIL_USER
+                        valueFrom:
+                            secretKeyRef:
+                                name: email-user
+                                key: latest
+                      - name: EMAIL_PASS
+                        valueFrom:
+                            secretKeyRef:
+                                name: email-pass
+                                key: latest
+                      - name: CLIENT_URL
+                        valueFrom:
+                            secretKeyRef:
+                                name: client-url
+                                key: latest

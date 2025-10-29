@@ -3,7 +3,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { signJwt } from "../lib/jwt.js";
 
-import { gcsService } from "./gcsService.js";
+//import { gcsService } from "./gcsService.js";
 
 import { CustomError } from "../utils/errorUtils/customError.js";
 
@@ -16,6 +16,8 @@ import {
     RegisterUserDataType,
     LoginUserDataType,
 } from "../validators/user.schema.js";
+import { isDev } from "../config/expressInit.js";
+const apiUrl = isDev ? "http://localhost:3000" : process.env.CLIENT_URL;
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -55,7 +57,7 @@ export const authService: AuthServicesTypes = {
             { where: { email: data.email } }
         );
 
-        const verificationLink = `${process.env.CLIENT_URL}/api/auth/verify-email/${token}`;
+        const verificationLink = `${apiUrl}/api/auth/verify-email/${token}`;
         await transporter.sendMail({
             from: `"Forum App" <${process.env.EMAIL_USER}>`,
             to: data.email,
