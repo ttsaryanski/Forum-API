@@ -3,13 +3,32 @@ kind: Service
 metadata:
     name: forum-api
     namespace: forum-restapi
+    annotations:
+        run.googleapis.com/cloudsql-instances: forum-restapi:europe-west4:forum-db
+        run.googleapis.com/ingress: all
 spec:
     template:
         metadata:
+            annotations:
+                run.googleapis.com/cloudsql-instances: forum-restapi:europe-west4:forum-db
+                autoscaling.knative.dev/maxScale: "10"
         spec:
+            serviceAccountName: forum-github-action@forum-restapi.iam.gserviceaccount.com
             containers:
                 - image: europe-west4-docker.pkg.dev/forum-restapi/forumapi-repo/forum-api
                   env:
+                      - name: NODE_ENV
+                        value: "production"
+                      - name: PG_HOST
+                        valueFrom:
+                            secretKeyRef:
+                                name: pg-host
+                                key: latest
+                      - name: PG_PORT
+                        valueFrom:
+                            secretKeyRef:
+                                name: pg-port
+                                key: latest
                       - name: CLOUD_DB_URL
                         valueFrom:
                             secretKeyRef:
@@ -39,16 +58,6 @@ spec:
                         valueFrom:
                             secretKeyRef:
                                 name: postgres-db
-                                key: latest
-                      - name: PG_HOST
-                        valueFrom:
-                            secretKeyRef:
-                                name: pg-host
-                                key: latest
-                      - name: PG_PORT
-                        valueFrom:
-                            secretKeyRef:
-                                name: pg-port
                                 key: latest
                       - name: GCS_BUCKET_NAME
                         valueFrom:
