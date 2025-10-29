@@ -5,8 +5,8 @@ config();
 const isDev = process.env.NODE_ENV === "development";
 
 const dbName = process.env.POSTGRES_DB || "";
-const dbUser = isDev ? "admin" : process.env.POSTGRES_USER || "";
-const dbPassword = isDev ? "password" : process.env.POSTGRES_PASSWORD || "";
+const dbUser = isDev ? "admin" : process.env.POSTGRES_USER;
+const dbPassword = isDev ? "password" : process.env.POSTGRES_PASSWORD;
 const dbHost = isDev ? "localhost" : process.env.PG_HOST;
 const dbPort = isDev ? 5432 : process.env.PG_PORT;
 
