@@ -19,3 +19,13 @@ export const loginUserSchema = z.object({
         .min(6, "Password should be at least 6 characters long!"),
 });
 export type LoginUserDataType = z.infer<typeof loginUserSchema>;
+
+export const changePasswordSchema = z.object({
+    currentPassword: z
+        .string()
+        .min(6, "Current password should be at least 6 characters long!"),
+    newPassword: z
+        .string()
+        .min(6, "New password should be at least 6 characters long!"),
+});
+export type ChangePasswordDataType = z.infer<typeof changePasswordSchema>;

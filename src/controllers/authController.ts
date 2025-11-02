@@ -13,6 +13,7 @@ import { loginLimiter } from "../utils/rateLimiter.js";
 import {
     registerUserSchema,
     loginUserSchema,
+    changePasswordSchema,
 } from "../validators/user.schema.js";
 
 //import upload from "../utils/upload/multerStorage.js";
@@ -28,7 +29,6 @@ export function authController(authService: AuthServicesTypes) {
         "/register",
         asyncErrorHandler(async (req, res: Response) => {
             const resultData = registerUserSchema.safeParse(req.body);
-
             if (!resultData.success) {
                 throw new CustomError(resultData.error.issues[0].message, 400);
             }
@@ -44,7 +44,6 @@ export function authController(authService: AuthServicesTypes) {
         loginLimiter,
         asyncErrorHandler(async (req, res: Response) => {
             const resultData = loginUserSchema.safeParse(req.body);
-
             if (!resultData.success) {
                 throw new CustomError(resultData.error.issues[0].message, 400);
             }
@@ -67,7 +66,6 @@ export function authController(authService: AuthServicesTypes) {
         authMiddleware,
         asyncErrorHandler(async (req, res: Response) => {
             const refreshToken = req.cookies?.refreshToken;
-
             if (!refreshToken) {
                 throw new CustomError("No refresh token provided!", 401);
             }
@@ -89,7 +87,6 @@ export function authController(authService: AuthServicesTypes) {
         authMiddleware,
         asyncErrorHandler(async (req, res: Response) => {
             const userId = req.user?.id;
-
             if (!userId) {
                 res.status(401).json({ message: "Unauthorized!" });
                 return;
@@ -120,7 +117,6 @@ export function authController(authService: AuthServicesTypes) {
 
     router.get("/verify-email/:token", async (req, res) => {
         const token = req.params.token;
-
         if (!token) {
             throw new CustomError("Verification token is required!", 400);
         }
@@ -134,10 +130,35 @@ export function authController(authService: AuthServicesTypes) {
         if (!email) {
             throw new CustomError("Email is required!", 400);
         }
+
         const message = await authService.resendVerificationEmail(email);
 
         res.status(200).json({ message });
     });
+
+    router.post(
+        "/change-password",
+        authMiddleware,
+        asyncErrorHandler(async (req, res: Response) => {
+            const userId = req.user?.id;
+            if (!userId) {
+                res.status(401).json({ message: "Unauthorized!" });
+                return;
+            }
+
+            const resultData = changePasswordSchema.safeParse(req.body);
+            if (!resultData.success) {
+                throw new CustomError(resultData.error.issues[0].message, 400);
+            }
+
+            const message = await authService.changePassword(
+                userId,
+                resultData.data
+            );
+
+            res.status(200).json({ message });
+        })
+    );
 
     return router;
 }

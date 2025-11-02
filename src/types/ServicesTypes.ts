@@ -5,6 +5,7 @@ import { UserResponseType } from "./UserTypes.js";
 import {
     RegisterUserDataType,
     LoginUserDataType,
+    ChangePasswordDataType,
 } from "../validators/user.schema.js";
 
 export interface NewsServicesTypes {
@@ -24,6 +25,10 @@ export interface AuthServicesTypes {
     getUserById(id: string): Promise<UserResponseType>;
     verifyEmail(token: string): Promise<string>;
     resendVerificationEmail(email: string): Promise<string>;
+    changePassword(
+        userId: string,
+        data: ChangePasswordDataType
+    ): Promise<string>;
 }
 
 export interface GCSServiceTypes {

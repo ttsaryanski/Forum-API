@@ -15,7 +15,9 @@ import { UserResponseType } from "../types/UserTypes.js";
 import {
     RegisterUserDataType,
     LoginUserDataType,
+    ChangePasswordDataType,
 } from "../validators/user.schema.js";
+
 import { isDev } from "../config/expressInit.js";
 const apiUrl = isDev ? "http://localhost:3000" : process.env.CLIENT_URL;
 
@@ -173,6 +175,29 @@ export const authService: AuthServicesTypes = {
         });
 
         return "Verification email resent. Please check your inbox.";
+    },
+
+    async changePassword(
+        userId: string,
+        data: ChangePasswordDataType
+    ): Promise<string> {
+        const user = await User.findByPk(parseInt(userId));
+        if (!user) {
+            throw new CustomError("User not found!", 404);
+        }
+
+        const isValid = await bcrypt.compare(
+            data.currentPassword,
+            user.password
+        );
+        if (!isValid) {
+            throw new CustomError("Current password is incorrect!", 401);
+        }
+
+        user.password = data.newPassword;
+        await user.save();
+
+        return "Password changed successfully!";
     },
 };
 
