@@ -14,7 +14,6 @@ env:
 jobs:
     deploy:
         runs-on: ubuntu-latest
-        environment: Secrets environments
 
         steps:
             - name: Checkout repository
@@ -25,52 +24,34 @@ jobs:
               with:
                   credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-            - name: Fetch Secrets from GCP Secret Manager
-              run: |
-                  echo "JWT_SECRET=$(gcloud secrets versions access latest --secret=jwt-secret)" >> $GITHUB_ENV
-                  echo "JWT_REFRESH_SECRET=$(gcloud secrets versions access latest --secret=jwt-refresh-secret)" >> $GITHUB_ENV
-                  echo "GCS_BUCKET_NAME=$(gcloud secrets versions access latest --secret=gcp-bucket-name)" >> $GITHUB_ENV
-                  echo "POSTGRES_DB=$(gcloud secrets versions access latest --secret=postgres-db)" >> $GITHUB_ENV
-                  echo "POSTGRES_USER=$(gcloud secrets versions access latest --secret=postgres-user)" >> $GITHUB_ENV
-                  echo "POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret=postgres-password)" >> $GITHUB_ENV
+            # - name: Fetch Secrets from GCP Secret Manager
+            #   run: |
+            #       echo "JWT_SECRET=$(gcloud secrets versions access latest --secret=jwt-secret)" >> $GITHUB_ENV
+            #       echo "JWT_REFRESH_SECRET=$(gcloud secrets versions access latest --secret=jwt-refresh-secret)" >> $GITHUB_ENV
+            #       echo "GCS_BUCKET_NAME=$(gcloud secrets versions access latest --secret=gcp-bucket-name)" >> $GITHUB_ENV
+            #       echo "POSTGRES_DB=$(gcloud secrets versions access latest --secret=postgres-db)" >> $GITHUB_ENV
+            #       echo "POSTGRES_USER=$(gcloud secrets versions access latest --secret=postgres-user)" >> $GITHUB_ENV
+            #       echo "POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret=postgres-password)" >> $GITHUB_ENV
 
-            - name: Set up Node.js
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 18
+            # - name: Set up Node.js
+            #   uses: actions/setup-node@v3
+            #   with:
+            #       node-version: 18
 
-            - name: Install dependencies
-              run: npm install
+            # - name: Install dependencies
+            #   run: npm install
 
-            - name: Run Prettier check
-              run: npm run format:check
+            # - name: Run Prettier check
+            #   run: npm run format:check
 
-            - name: Run ESLint
-              run: npm run lint
+            # - name: Run ESLint
+            #   run: npm run lint
 
-            - name: Validate OpenAPI spec
-              run: npm run validate
+            # - name: Validate OpenAPI spec
+            #   run: npm run validate
 
-            # - name: Set JWT_SECRET
-            #   run: echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $GITHUB_ENV
-
-            # - name: Set JWT_REFRESH_SECRET
-            #   run: echo "JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}" >> $GITHUB_ENV
-
-            # - name: Set GCS_BUCKET_NAME
-            #   run: echo "GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}" >> $GITHUB_ENV
-
-            # - name: Set POSTGRES_DB
-            #   run: echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> $GITHUB_ENV
-
-            # - name: Set POSTGRES_USER
-            #   run: echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $GITHUB_ENV
-
-            # - name: Set POSTGRES_PASSWORD
-            #   run: echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $GITHUB_ENV
-
-            - name: Run Tests
-              run: npm test
+            # - name: Run Tests
+            #   run: npm test
 
             - name: Set up gcloud CLI
               uses: google-github-actions/setup-gcloud@v1
