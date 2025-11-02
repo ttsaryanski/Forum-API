@@ -27,12 +27,12 @@ jobs:
 
             - name: Fetch Secrets from GCP Secret Manager
               run: |
-                  echo "JWT_SECRET=$(gcloud secrets versions access latest --secret=JWT_SECRET)" >> $GITHUB_ENV
-                  echo "JWT_REFRESH_SECRET=$(gcloud secrets versions access latest --secret=JWT_REFRESH_SECRET)" >> $GITHUB_ENV
-                  echo "GCS_BUCKET_NAME=$(gcloud secrets versions access latest --secret=GCS_BUCKET_NAME)" >> $GITHUB_ENV
-                  echo "POSTGRES_DB=$(gcloud secrets versions access latest --secret=POSTGRES_DB)" >> $GITHUB_ENV
-                  echo "POSTGRES_USER=$(gcloud secrets versions access latest --secret=POSTGRES_USER)" >> $GITHUB_ENV
-                  echo "POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret=POSTGRES_PASSWORD)" >> $GITHUB_ENV
+                  echo "JWT_SECRET=$(gcloud secrets versions access latest --secret=jwt-secret)" >> $GITHUB_ENV
+                  echo "JWT_REFRESH_SECRET=$(gcloud secrets versions access latest --secret=jwt-refresh-secret)" >> $GITHUB_ENV
+                  echo "GCS_BUCKET_NAME=$(gcloud secrets versions access latest --secret=gcp-bucket-name)" >> $GITHUB_ENV
+                  echo "POSTGRES_DB=$(gcloud secrets versions access latest --secret=postgres-db)" >> $GITHUB_ENV
+                  echo "POSTGRES_USER=$(gcloud secrets versions access latest --secret=postgres-user)" >> $GITHUB_ENV
+                  echo "POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret=postgres-password)" >> $GITHUB_ENV
 
             - name: Set up Node.js
               uses: actions/setup-node@v3
