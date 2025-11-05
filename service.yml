@@ -79,3 +79,8 @@ spec:
                             secretKeyRef:
                                 name: client-url
                                 key: latest
+                      - name: FORUM_CLIENT_URL
+                        valueFrom:
+                            secretKeyRef:
+                                name: forum-client-url
+                                key: latest
