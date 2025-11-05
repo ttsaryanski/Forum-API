@@ -13,7 +13,12 @@ const fileFilter: multer.Options["fileFilter"] = (
     if (uploadConfig.allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new CustomError("Only PDF files are allowed!", 400));
+        cb(
+            new CustomError(
+                "Only jpeg, jpg, png and gif files are allowed!",
+                400
+            )
+        );
     }
 };
 

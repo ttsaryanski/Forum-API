@@ -14,9 +14,12 @@ import {
     registerUserSchema,
     loginUserSchema,
     changePasswordSchema,
+    editUserSchema,
+    emailSchema,
+    newPasswordSchema,
 } from "../validators/user.schema.js";
 
-//import upload from "../utils/upload/multerStorage.js";
+import upload from "../utils/upload/multerStorage.js";
 import { isDev } from "../config/expressInit.js";
 const clientUrl = isDev
     ? "http://localhost:5173"
@@ -88,13 +91,41 @@ export function authController(authService: AuthServicesTypes) {
         asyncErrorHandler(async (req, res: Response) => {
             const userId = req.user?.id;
             if (!userId) {
-                res.status(401).json({ message: "Unauthorized!" });
-                return;
+                throw new CustomError("Unauthorized!", 401);
             }
 
             const user = await authService.getUserById(userId);
 
             res.status(200).json(user);
+        })
+    );
+
+    router.put(
+        "/profile",
+        authMiddleware,
+        upload.single("file"),
+        asyncErrorHandler(async (req, res) => {
+            const userId = req.user!.id;
+            let file = null;
+            let data = req.body;
+
+            if (req.file) {
+                file = req.file;
+                data = { ...data, file: req.file };
+            }
+
+            const resultData = editUserSchema.safeParse(data);
+            if (!resultData.success) {
+                throw new CustomError(resultData.error.issues[0].message, 400);
+            }
+
+            const updatedUser = await authService.editUser(
+                userId,
+                data,
+                file || undefined
+            );
+
+            res.status(201).json(updatedUser);
         })
     );
 
@@ -115,26 +146,46 @@ export function authController(authService: AuthServicesTypes) {
         })
     );
 
-    router.get("/verify-email/:token", async (req, res) => {
-        const token = req.params.token;
-        if (!token) {
-            throw new CustomError("Verification token is required!", 400);
-        }
-        await authService.verifyEmail(token);
+    router.get(
+        "/verify-email/:token",
+        asyncErrorHandler(async (req, res) => {
+            const token = req.params.token;
+            if (!token) {
+                throw new CustomError("Verification token is required!", 400);
+            }
+            await authService.verifyEmail(token);
 
-        res.status(200).redirect(`${clientUrl}/auth/verified`);
-    });
+            res.status(200).redirect(`${clientUrl}/auth/verified`);
+        })
+    );
 
-    router.post("/resend-email", async (req, res) => {
-        const email = req.query.email as string;
-        if (!email) {
-            throw new CustomError("Email is required!", 400);
-        }
+    router.post(
+        "/resend-email",
+        asyncErrorHandler(async (req, res) => {
+            const email = req.query.email as string;
+            if (!email) {
+                throw new CustomError("Email is required!", 400);
+            }
 
-        const message = await authService.resendVerificationEmail(email);
+            const message = await authService.resendVerificationEmail(email);
 
-        res.status(200).json({ message });
-    });
+            res.status(200).json({ message });
+        })
+    );
+
+    router.post(
+        "/forgot-password",
+        asyncErrorHandler(async (req, res) => {
+            const resultData = emailSchema.safeParse(req.body);
+            if (!resultData.success) {
+                throw new CustomError(resultData.error.issues[0].message, 400);
+            }
+
+            const message = await authService.forgotPassword(resultData.data);
+
+            res.status(200).json({ message });
+        })
+    );
 
     router.post(
         "/change-password",
@@ -153,6 +204,28 @@ export function authController(authService: AuthServicesTypes) {
 
             const message = await authService.changePassword(
                 userId,
+                resultData.data
+            );
+
+            res.status(200).json({ message });
+        })
+    );
+
+    router.post(
+        "/reset-password",
+        asyncErrorHandler(async (req, res: Response) => {
+            const token = req.query.token as string;
+            if (!token) {
+                throw new CustomError("Token is required!", 400);
+            }
+
+            const resultData = newPasswordSchema.safeParse(req.body);
+            if (!resultData.success) {
+                throw new CustomError(resultData.error.issues[0].message, 400);
+            }
+
+            const message = await authService.setNewPassword(
+                token,
                 resultData.data
             );
 

@@ -3,7 +3,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { signJwt } from "../lib/jwt.js";
 
-//import { gcsService } from "./gcsService.js";
+import { gcsService } from "./gcsService.js";
 
 import { CustomError } from "../utils/errorUtils/customError.js";
 
@@ -16,10 +16,16 @@ import {
     RegisterUserDataType,
     LoginUserDataType,
     ChangePasswordDataType,
+    EditUserDataType,
+    EmailDataType,
+    NewPasswordDataType,
 } from "../validators/user.schema.js";
 
 import { isDev } from "../config/expressInit.js";
 const apiUrl = isDev ? "http://localhost:3000" : process.env.CLIENT_URL;
+const clientUrl = isDev
+    ? "http://localhost:5173"
+    : process.env.FORUM_CLIENT_URL;
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -131,6 +137,45 @@ export const authService: AuthServicesTypes = {
         };
     },
 
+    async editUser(
+        userId: string,
+        data: EditUserDataType,
+        file?: Express.Multer.File
+    ): Promise<UserResponseType> {
+        const user = await User.findByPk(parseInt(userId));
+        if (!user) {
+            throw new CustomError("User not found!", 404);
+        }
+
+        if (data.username) {
+            const existingUserName = await User.findOne({
+                where: { username: data.username },
+            });
+            if (existingUserName && existingUserName.id !== user.id) {
+                throw new CustomError("This username is already taken!", 409);
+            }
+            user.username = data.username;
+        }
+
+        if (file) {
+            const avatarUrl = await gcsService.uploadFile(file);
+            user.avatar_url = avatarUrl;
+        }
+
+        await user.save();
+
+        return {
+            id: user.id!.toString(),
+            email: user.email,
+            username: user.username,
+            avatarUrl: user.avatar_url || undefined,
+            lastLogin: user.last_login || undefined,
+            role: user.role,
+            createdAt: user.createdAt!,
+            updatedAt: user.updatedAt!,
+        };
+    },
+
     async verifyEmail(token: string): Promise<string> {
         const user = await User.findOne({
             where: { verificationToken: token },
@@ -164,7 +209,7 @@ export const authService: AuthServicesTypes = {
         user.verificationToken = token;
         await user.save();
 
-        const verificationLink = `${process.env.CLIENT_URL}/api/auth/verify-email/${token}`;
+        const verificationLink = `${apiUrl}/api/auth/verify-email/${token}`;
         await transporter.sendMail({
             from: `"Forum App" <${process.env.EMAIL_USER}>`,
             to: email,
@@ -175,6 +220,32 @@ export const authService: AuthServicesTypes = {
         });
 
         return "Verification email resent. Please check your inbox.";
+    },
+
+    async forgotPassword(data: EmailDataType): Promise<string> {
+        const user = await User.findOne({
+            where: { email: data.email },
+        });
+
+        if (!user) {
+            throw new CustomError("User with this email does not exist!", 404);
+        }
+
+        const token = crypto.randomBytes(32).toString("hex");
+        user.resetToken = token;
+        await user.save();
+
+        const verificationLink = `${clientUrl}/auth/resetPassword/${token}`;
+        await transporter.sendMail({
+            from: `"Forum App" <${process.env.EMAIL_USER}>`,
+            to: data.email,
+            subject: "Confirm your email address",
+            html: `<p>Hello,</p>
+         <p>Please click the link below to reset your password:</p>
+         <a href="${verificationLink}">${verificationLink}</a>`,
+        });
+
+        return "Verification email sent. Please check your inbox.";
     },
 
     async changePassword(
@@ -198,6 +269,25 @@ export const authService: AuthServicesTypes = {
         await user.save();
 
         return "Password changed successfully!";
+    },
+
+    async setNewPassword(
+        token: string,
+        data: NewPasswordDataType
+    ): Promise<string> {
+        const user = await User.findOne({
+            where: { resetToken: token },
+        });
+
+        if (!user) {
+            throw new CustomError("No user found to set a new password!", 404);
+        }
+
+        user.password = data.password;
+        user.resetToken = null;
+        await user.save();
+
+        return "New password set successfully!";
     },
 };
 

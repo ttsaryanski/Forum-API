@@ -6,6 +6,9 @@ import {
     RegisterUserDataType,
     LoginUserDataType,
     ChangePasswordDataType,
+    EditUserDataType,
+    EmailDataType,
+    NewPasswordDataType,
 } from "../validators/user.schema.js";
 
 export interface NewsServicesTypes {
@@ -29,6 +32,13 @@ export interface AuthServicesTypes {
         userId: string,
         data: ChangePasswordDataType
     ): Promise<string>;
+    editUser(
+        userId: string,
+        data: EditUserDataType,
+        file?: Express.Multer.File
+    ): Promise<UserResponseType>;
+    forgotPassword(data: EmailDataType): Promise<string>;
+    setNewPassword(token: string, data: NewPasswordDataType): Promise<string>;
 }
 
 export interface GCSServiceTypes {
