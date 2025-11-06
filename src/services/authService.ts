@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
-import crypto from "crypto";
 import nodemailer from "nodemailer";
-import { signJwt } from "../lib/jwt.js";
+import { signJwt, verifyJwt } from "../lib/jwt.js";
 
 import { gcsService } from "./gcsService.js";
 
@@ -22,6 +21,21 @@ import {
 } from "../validators/user.schema.js";
 
 import { isDev } from "../config/expressInit.js";
+
+interface EmailVerificationPayload {
+    userId: number;
+    type: "email-verification";
+    iat?: number;
+    exp?: number;
+}
+
+interface PasswordResetPayload {
+    userId: number;
+    type: "password-reset";
+    iat?: number;
+    exp?: number;
+}
+
 const apiUrl = isDev ? "http://localhost:3000" : process.env.CLIENT_URL;
 const clientUrl = isDev
     ? "http://localhost:5173"
@@ -59,21 +73,39 @@ export const authService: AuthServicesTypes = {
 
         await User.create(userData);
 
-        const token = crypto.randomBytes(32).toString("hex");
-        await User.update(
-            { verificationToken: token },
-            { where: { email: data.email } }
+        const createdUser = await User.findOne({
+            where: { email: data.email },
+        });
+        if (!createdUser) {
+            throw new CustomError("Failed to create user!", 500);
+        }
+
+        const verificationToken = await signJwt(
+            {
+                userId: createdUser.id,
+                type: "email-verification",
+            },
+            process.env.JWT_SECRET!,
+            { expiresIn: "24h" }
         );
 
-        const verificationLink = `${apiUrl}/api/auth/verify-email/${token}`;
-        await transporter.sendMail({
-            from: `"Forum App" <${process.env.EMAIL_USER}>`,
-            to: data.email,
-            subject: "Confirm your email address",
-            html: `<p>Hello ${data.username},</p>
-         <p>Please click the link below to verify your email:</p>
-         <a href="${verificationLink}">${verificationLink}</a>`,
-        });
+        const verificationLink = `${apiUrl}/api/auth/verify-email/${verificationToken}`;
+        try {
+            await transporter.sendMail({
+                from: `"Forum App" <${process.env.EMAIL_USER}>`,
+                to: data.email,
+                subject: "Confirm your email address",
+                html: `<p>Hello ${data.username},</p>
+                <p>Please click the link below to verify your email:</p>
+                <a href="${verificationLink}">${verificationLink}</a>
+                <p><strong>This link will expire in 24 hours.</strong></p>`,
+            });
+        } catch (error) {
+            throw new CustomError(
+                `Failed to send verification email!: ${error}`,
+                500
+            );
+        }
 
         return "Registration successful. Please check your email to verify your account!";
     },
@@ -177,24 +209,47 @@ export const authService: AuthServicesTypes = {
     },
 
     async verifyEmail(token: string): Promise<string> {
-        const user = await User.findOne({
-            where: { verificationToken: token },
-        });
+        try {
+            const decoded = (await verifyJwt(
+                token,
+                process.env.JWT_SECRET!
+            )) as EmailVerificationPayload;
 
-        if (!user) {
-            throw new CustomError("Invalid verification token!", 400);
+            if (decoded.type !== "email-verification") {
+                throw new CustomError("Invalid token type!", 400);
+            }
+
+            const user = await User.findByPk(decoded.userId);
+
+            if (!user) {
+                throw new CustomError("User not found!", 404);
+            }
+
+            if (user.isVerified) {
+                throw new CustomError("Email is already verified!", 400);
+            }
+
+            user.isVerified = true;
+            await user.save();
+
+            return "Email verified successfully!";
+        } catch (error: unknown) {
+            if (error instanceof Error && error.name === "TokenExpiredError") {
+                throw new CustomError(
+                    "Verification token has expired. Please request a new verification email.",
+                    400
+                );
+            }
+            if (error instanceof Error && error.name === "JsonWebTokenError") {
+                throw new CustomError("Invalid verification token!", 400);
+            }
+            throw error;
         }
-
-        user.isVerified = true;
-        user.verificationToken = null;
-        await user.save();
-
-        return "Email verified successfully!";
     },
 
-    async resendVerificationEmail(email: string): Promise<string> {
+    async resendVerificationEmail(data: EmailDataType): Promise<string> {
         const user = await User.findOne({
-            where: { email: email },
+            where: { email: data.email },
         });
 
         if (!user) {
@@ -204,20 +259,32 @@ export const authService: AuthServicesTypes = {
         if (user.isVerified) {
             throw new CustomError("Email is already verified.", 400);
         }
+        const verificationToken = await signJwt(
+            {
+                userId: user.id,
+                type: "email-verification",
+            },
+            process.env.JWT_SECRET!,
+            { expiresIn: "24h" }
+        );
 
-        const token = crypto.randomBytes(32).toString("hex");
-        user.verificationToken = token;
-        await user.save();
-
-        const verificationLink = `${apiUrl}/api/auth/verify-email/${token}`;
-        await transporter.sendMail({
-            from: `"Forum App" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: "Confirm your email address",
-            html: `<p>Hello ${user.username},</p>
-         <p>Please click the link below to verify your email:</p>
-         <a href="${verificationLink}">${verificationLink}</a>`,
-        });
+        const verificationLink = `${apiUrl}/api/auth/verify-email/${verificationToken}`;
+        try {
+            await transporter.sendMail({
+                from: `"Forum App" <${process.env.EMAIL_USER}>`,
+                to: data.email,
+                subject: "Confirm your email address",
+                html: `<p>Hello ${user.username},</p>
+                <p>Please click the link below to verify your email:</p>
+                <a href="${verificationLink}">${verificationLink}</a>
+                <p><strong>This link will expire in 24 hours.</strong></p>`,
+            });
+        } catch (error) {
+            throw new CustomError(
+                `Failed to send verification email!: ${error}`,
+                500
+            );
+        }
 
         return "Verification email resent. Please check your inbox.";
     },
@@ -231,19 +298,32 @@ export const authService: AuthServicesTypes = {
             throw new CustomError("User with this email does not exist!", 404);
         }
 
-        const token = crypto.randomBytes(32).toString("hex");
-        user.resetToken = token;
-        await user.save();
+        const resetToken = await signJwt(
+            {
+                userId: user.id,
+                type: "password-reset",
+            },
+            process.env.JWT_SECRET!,
+            { expiresIn: "15m" }
+        );
 
-        const verificationLink = `${clientUrl}/auth/resetPassword/${token}`;
-        await transporter.sendMail({
-            from: `"Forum App" <${process.env.EMAIL_USER}>`,
-            to: data.email,
-            subject: "Confirm your email address",
-            html: `<p>Hello,</p>
-         <p>Please click the link below to reset your password:</p>
-         <a href="${verificationLink}">${verificationLink}</a>`,
-        });
+        const verificationLink = `${clientUrl}/auth/resetPassword/${resetToken}`;
+        try {
+            await transporter.sendMail({
+                from: `"Forum App" <${process.env.EMAIL_USER}>`,
+                to: data.email,
+                subject: "Reset your password",
+                html: `<p>Hello,</p>
+                <p>Please click the link below to reset your password:</p>
+                <a href="${verificationLink}">${verificationLink}</a>
+                <p><strong>This link will expire in 15 minutes.</strong></p>`,
+            });
+        } catch (error) {
+            throw new CustomError(
+                `Failed to send password reset email!: ${error}`,
+                500
+            );
+        }
 
         return "Verification email sent. Please check your inbox.";
     },
@@ -275,23 +355,30 @@ export const authService: AuthServicesTypes = {
         token: string,
         data: NewPasswordDataType
     ): Promise<string> {
-        const user = await User.findOne({
-            where: { resetToken: token },
-        });
+        const decoded = (await verifyJwt(
+            token,
+            process.env.JWT_SECRET!
+        )) as PasswordResetPayload;
+
+        if (decoded.type !== "password-reset") {
+            throw new CustomError("Invalid token type!", 400);
+        }
+
+        const user = await User.findByPk(decoded.userId);
 
         if (!user) {
             throw new CustomError("No user found to set a new password!", 404);
         }
 
         user.password = data.password;
-        user.resetToken = null;
         await user.save();
+        await RefreshToken.destroy({ where: { user_id: user.id } });
 
         return "New password set successfully!";
     },
 };
 
-type AccessTokenUser = {
+export type AccessTokenUser = {
     id: string;
     email: string;
     username: string;

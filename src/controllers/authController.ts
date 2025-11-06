@@ -3,12 +3,13 @@ import { Router, Response } from "express";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
 import { AuthServicesTypes } from "../types/ServicesTypes.js";
-import { RequestUser } from "../types/express.js";
+import { AccessTokenUser } from "../services/authService.js";
 
 import { asyncErrorHandler } from "../utils/errorUtils/asyncErrorHandler.js";
 import { CustomError } from "../utils/errorUtils/customError.js";
 import { createAccessTokens } from "../services/authService.js";
 import { loginLimiter } from "../utils/rateLimiter.js";
+import { verifyJwt } from "../lib/jwt.js";
 
 import {
     registerUserSchema,
@@ -131,16 +132,17 @@ export function authController(authService: AuthServicesTypes) {
 
     router.post(
         "/refresh",
-        authMiddleware,
         asyncErrorHandler(async (req, res) => {
-            const user = req.user as RequestUser;
+            const refreshToken = req.cookies?.refreshToken;
+            if (!refreshToken) {
+                throw new CustomError("No refresh token provided!", 401);
+            }
 
-            const tokens = await createAccessTokens({
-                id: user.id,
-                email: user.email,
-                username: user.username,
-                role: user.role,
-            });
+            const decoded = await verifyJwt(
+                refreshToken,
+                process.env.JWT_REFRESH_SECRET!
+            );
+            const tokens = await createAccessTokens(decoded as AccessTokenUser);
 
             res.status(200).json({ accessToken: tokens.accessToken });
         })
@@ -153,6 +155,7 @@ export function authController(authService: AuthServicesTypes) {
             if (!token) {
                 throw new CustomError("Verification token is required!", 400);
             }
+
             await authService.verifyEmail(token);
 
             res.status(200).redirect(`${clientUrl}/auth/verified`);
@@ -162,12 +165,14 @@ export function authController(authService: AuthServicesTypes) {
     router.post(
         "/resend-email",
         asyncErrorHandler(async (req, res) => {
-            const email = req.query.email as string;
-            if (!email) {
-                throw new CustomError("Email is required!", 400);
+            const resultData = emailSchema.safeParse(req.body);
+            if (!resultData.success) {
+                throw new CustomError(resultData.error.issues[0].message, 400);
             }
 
-            const message = await authService.resendVerificationEmail(email);
+            const message = await authService.resendVerificationEmail(
+                resultData.data
+            );
 
             res.status(200).json({ message });
         })
@@ -193,8 +198,7 @@ export function authController(authService: AuthServicesTypes) {
         asyncErrorHandler(async (req, res: Response) => {
             const userId = req.user?.id;
             if (!userId) {
-                res.status(401).json({ message: "Unauthorized!" });
-                return;
+                throw new CustomError("Unauthorized!", 401);
             }
 
             const resultData = changePasswordSchema.safeParse(req.body);

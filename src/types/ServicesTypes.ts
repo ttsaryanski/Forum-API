@@ -27,7 +27,7 @@ export interface AuthServicesTypes {
     logout(token: { accessToken: string; refreshToken: string }): Promise<void>;
     getUserById(id: string): Promise<UserResponseType>;
     verifyEmail(token: string): Promise<string>;
-    resendVerificationEmail(email: string): Promise<string>;
+    resendVerificationEmail(data: EmailDataType): Promise<string>;
     changePassword(
         userId: string,
         data: ChangePasswordDataType
