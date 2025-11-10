@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { refreshTokenMiddleware } from "../middlewares/refreshTokenMiddleware.js";
 
 import { AuthServicesTypes } from "../types/ServicesTypes.js";
 import { AccessTokenUser } from "../services/authService.js";
@@ -22,6 +23,7 @@ import {
 
 import upload from "../utils/upload/multerStorage.js";
 import { isDev } from "../config/expressInit.js";
+
 const clientUrl = isDev
     ? "http://localhost:5173"
     : "https://forum-1ab65.web.app";
@@ -67,7 +69,7 @@ export function authController(authService: AuthServicesTypes) {
 
     router.post(
         "/logout",
-        authMiddleware,
+        refreshTokenMiddleware,
         asyncErrorHandler(async (req, res: Response) => {
             const refreshToken = req.cookies?.refreshToken;
             if (!refreshToken) {
@@ -132,6 +134,7 @@ export function authController(authService: AuthServicesTypes) {
 
     router.post(
         "/refresh",
+        refreshTokenMiddleware,
         asyncErrorHandler(async (req, res) => {
             const refreshToken = req.cookies?.refreshToken;
             if (!refreshToken) {
@@ -142,6 +145,11 @@ export function authController(authService: AuthServicesTypes) {
                 refreshToken,
                 process.env.JWT_REFRESH_SECRET!
             );
+
+            if (!decoded || typeof decoded !== "object" || !("id" in decoded)) {
+                throw new CustomError("Invalid refresh token!", 401);
+            }
+
             const tokens = await createAccessTokens(decoded as AccessTokenUser);
 
             res.status(200).json({ accessToken: tokens.accessToken });

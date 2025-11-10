@@ -48,7 +48,10 @@ export default function expressInit(app: Application) {
                 req.path.startsWith("/docs") ||
                 (req.headers.referer && req.headers.referer.includes("/docs"));
 
-            if (isSwaggerUI) {
+            const csrfExcluded = ["/api/auth/refresh", "/api/auth/logout"];
+            const isCsrfExcluded = csrfExcluded.includes(req.path);
+
+            if (isSwaggerUI || isCsrfExcluded) {
                 return next();
             }
 

@@ -2,11 +2,205 @@ openapi: 3.0.0
 info:
     title: Forum REST API
     version: 1.0.0
+    description: |
+        This API is rate limited:
+        - Global: max 100 requests per 15 minutes per IP
+        - Endpoint /auth/login: max 5 requests per 15 minutes per IP
 
 servers:
     - url: http://localhost:3000/api
 
 paths:
+    /auth/register:
+        post:
+            summary: User registration
+            tags: [Auth]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/AuthRegisterRequest"
+            responses:
+                201:
+                    description: Register is successful
+                    headers:
+                        Set-Cookie:
+                            description: Set JWT in cookie
+                            schema:
+                                type: string
+                                example: refreshToken=eyJhbGciOiJIUzI1...; Path=/; HttpOnly; Secure; SameSite=none
+                    content:
+                        application/json:
+                            example:
+                                message: "Registration successful. Please check your email to verify your account!"
+                400:
+                    description: Bad Request - Invalid data
+                    content:
+                        application/json:
+                            examples:
+                                invalidUserName:
+                                    summary: Invalid username
+                                    value:
+                                        message: "Username should be at least 3 characters long!"
+                                invalidEmail:
+                                    summary: Invalid email
+                                    value:
+                                        message: "Invalid email format!"
+                                invalidPassword:
+                                    summary: Invalid password
+                                    value:
+                                        message: "Password must be at least 6 characters!"
+                409:
+                    description: Conflict - Username or email already registered
+                    content:
+                        application/json:
+                            examples:
+                                usernameExists:
+                                    summary: Username already registered
+                                    value:
+                                        message: "This username already registered!"
+                                emailExists:
+                                    summary: Email already registered
+                                    value:
+                                        message: "This email already registered!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error
+                    content:
+                        application/json:
+                            examples:
+                                DatabaseError:
+                                    summary: Database error
+                                    value:
+                                        message: "Failed to create user!"
+                                EmailServerError:
+                                    summary: Email server error
+                                    value:
+                                        message: "Failed to send verification email!"
+
+    /auth/login:
+        post:
+            summary: User login
+            tags: [Auth]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/AuthLoginRequest"
+            responses:
+                201:
+                    description: Register is successful
+                    headers:
+                        Set-Cookie:
+                            description: Set JWT in cookie
+                            schema:
+                                type: string
+                                example: refreshToken=eyJhbGciOiJIUzI1...; Path=/; HttpOnly; Secure; SameSite=none
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/AuthLoginResponse"
+                400:
+                    description: Bad Request - Invalid data
+                    content:
+                        application/json:
+                            examples:
+                                invalidEmail:
+                                    summary: Invalid email
+                                    value:
+                                        message: "Invalid email format!"
+                                invalidPassword:
+                                    summary: Invalid password
+                                    value:
+                                        message: "Password must be at least 6 characters!"
+                401:
+                    description: Unauthorized - Invalid password
+                    content:
+                        application/json:
+                            example:
+                                message: "Password does not match!"
+                403:
+                    description: Forbidden - email not verified
+                    content:
+                        application/json:
+                            example:
+                                message: "Please verify your email first!"
+                404:
+                    description: Not Found - User does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "User does not exist!"
+                429:
+                    description: Too Many Requests - Too many login attempts
+                    content:
+                        application/json:
+                            example:
+                                message: "Too many login attempts. Please try again in 15 minutes."
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /auth/logout:
+        post:
+            summary: User logout
+            tags: [Auth]
+            security:
+                - cookieAuth: []
+            responses:
+                200:
+                    description: Logout is successful
+                    headers:
+                        Set-Cookie:
+                            description: Clear JWT cookie
+                            schema:
+                                type: string
+                                example: refreshToken=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0
+                    content:
+                        application/json:
+                            example:
+                                message: "Logged out successfully!"
+                401:
+                    description: Unauthorized - Missing token
+                    content:
+                        application/json:
+                            example:
+                                message: "Missing refresh token!"
+                403:
+                    description: Forbidden - Access denied
+                    content:
+                        application/json:
+                            examples:
+                                invalidToken:
+                                    summary: Invalid refresh token
+                                    value:
+                                        message: "Invalid or expired refresh token!"
+                                expiredToken:
+                                    summary: Expired refresh token
+                                    value:
+                                        message: "Refresh token expired, please log in again!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            examples:
+                                JWTError:
+                                    summary: JWT error
+                                    value:
+                                        message: "JWT refresh secret is not configured!"
+                                ServerError:
+                                    summary: General server error
+                                    value:
+                                        message: "Internal server error..."
+
     /news:
         get:
             summary: Gets all news
@@ -59,6 +253,7 @@ paths:
                         application/json:
                             example:
                                 message: "Internal server error..."
+
     /news/{newsId}:
         get:
             summary: Gets a news by ID
@@ -180,7 +375,65 @@ paths:
                                 message: "Internal server error..."
 
 components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+
+        cookieAuth:
+            type: apiKey
+            in: cookie
+            name: refreshToken
+    responses:
+        TooManyRequests:
+            description: Too many requests
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        properties:
+                            error:
+                                type: string
+                                example: Too many requests from this IP, please try again later.
     schemas:
+        AuthRegisterRequest:
+            type: object
+            required:
+                - username
+                - email
+                - password
+            properties:
+                username:
+                    type: string
+                    example: exampleUser
+                email:
+                    type: string
+                    example: example@email.com
+                password:
+                    type: string
+                    example: examplePassword
+
+        AuthLoginRequest:
+            type: object
+            required:
+                - email
+                - password
+            properties:
+                email:
+                    type: string
+                    example: example@email.com
+                password:
+                    type: string
+                    example: examplePassword
+
+        AuthLoginResponse:
+            type: object
+            properties:
+                accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1...
+
         SimpleNews:
             type: object
             properties:
