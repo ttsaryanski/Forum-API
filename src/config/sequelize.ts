@@ -27,6 +27,7 @@ const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
                   require: true,
                   rejectUnauthorized: false,
               },
+              channelBinding: true,
           },
 });
 
