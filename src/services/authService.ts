@@ -237,11 +237,11 @@ export const authService: AuthServicesTypes = {
             if (error instanceof Error && error.name === "TokenExpiredError") {
                 throw new CustomError(
                     "Verification token has expired. Please request a new verification email.",
-                    400
+                    401
                 );
             }
             if (error instanceof Error && error.name === "JsonWebTokenError") {
-                throw new CustomError("Invalid verification token!", 400);
+                throw new CustomError("Invalid verification token!", 401);
             }
             throw error;
         }
@@ -355,26 +355,42 @@ export const authService: AuthServicesTypes = {
         token: string,
         data: NewPasswordDataType
     ): Promise<string> {
-        const decoded = (await verifyJwt(
-            token,
-            process.env.JWT_SECRET!
-        )) as PasswordResetPayload;
+        try {
+            const decoded = (await verifyJwt(
+                token,
+                process.env.JWT_SECRET!
+            )) as PasswordResetPayload;
 
-        if (decoded.type !== "password-reset") {
-            throw new CustomError("Invalid token type!", 400);
+            if (decoded.type !== "password-reset") {
+                throw new CustomError("Invalid token type!", 400);
+            }
+
+            const user = await User.findByPk(decoded.userId);
+
+            if (!user) {
+                throw new CustomError(
+                    "No user found to set a new password!",
+                    404
+                );
+            }
+
+            user.password = data.password;
+            await user.save();
+            await RefreshToken.destroy({ where: { user_id: user.id } });
+
+            return "New password set successfully!";
+        } catch (error: unknown) {
+            if (error instanceof Error && error.name === "TokenExpiredError") {
+                throw new CustomError(
+                    "Password reset token has expired. Please request a new password reset.",
+                    401
+                );
+            }
+            if (error instanceof Error && error.name === "JsonWebTokenError") {
+                throw new CustomError("Invalid password reset token!", 401);
+            }
+            throw error;
         }
-
-        const user = await User.findByPk(decoded.userId);
-
-        if (!user) {
-            throw new CustomError("No user found to set a new password!", 404);
-        }
-
-        user.password = data.password;
-        await user.save();
-        await RefreshToken.destroy({ where: { user_id: user.id } });
-
-        return "New password set successfully!";
     },
 };
 
@@ -409,12 +425,8 @@ export async function createAccessTokens(user: AccessTokenUser) {
         }
     );
 
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-
     await RefreshToken.create({
         token: refreshToken,
-        expiresAt: expiresAt,
         user_id: parseInt(user.id),
     });
 

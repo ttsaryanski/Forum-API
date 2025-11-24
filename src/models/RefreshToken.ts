@@ -6,7 +6,6 @@ import User from "./User.js";
 interface RefreshTokenAttributes {
     id?: number;
     token: string;
-    expiresAt: Date;
     user_id: number;
     createdAt?: Date;
 }
@@ -22,10 +21,6 @@ const RefreshToken = sequelize.define<RefreshTokenInstance>(
             type: DataTypes.TEXT,
             allowNull: false,
             unique: true,
-        },
-        expiresAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
         },
         user_id: {
             type: DataTypes.INTEGER,

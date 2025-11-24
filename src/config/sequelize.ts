@@ -20,6 +20,14 @@ const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
     port: Number(dbPort || 5432),
     dialect: "postgres",
     logging: false,
+    dialectOptions: isDev
+        ? {}
+        : {
+              ssl: {
+                  require: true,
+                  rejectUnauthorized: false,
+              },
+          },
 });
 
 export default sequelize;

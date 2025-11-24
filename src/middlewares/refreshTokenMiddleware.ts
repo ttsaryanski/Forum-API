@@ -11,7 +11,6 @@ import { RequestUser } from "../types/express.js";
 interface RefreshTokenAttributes {
     id: number;
     token: string;
-    expiresAt: Date;
     user_id: number;
 }
 
@@ -35,15 +34,7 @@ const refreshTokenMiddleware = async (
         })) as RefreshTokenInstance | null;
 
         if (!dbToken) {
-            throw new CustomError("Invalid or expired refresh token!", 403);
-        }
-
-        if (dbToken.expiresAt < new Date()) {
-            await dbToken.destroy();
-            throw new CustomError(
-                "Refresh token expired, please log in again!",
-                403
-            );
+            throw new CustomError("Invalid refresh token!", 401);
         }
 
         const secret = process.env.JWT_REFRESH_SECRET;
@@ -61,6 +52,29 @@ const refreshTokenMiddleware = async (
         if (req.cookies?.refreshToken) {
             res.clearCookie("refreshToken");
         }
+
+        if (error instanceof Error) {
+            if (error.name === "TokenExpiredError") {
+                const cookieToken = req.cookies?.refreshToken;
+                if (cookieToken) {
+                    await RefreshToken.destroy({
+                        where: { token: cookieToken },
+                    });
+                }
+                next(
+                    new CustomError(
+                        "Refresh token expired, please log in again!",
+                        401
+                    )
+                );
+                return;
+            }
+            if (error.name === "JsonWebTokenError") {
+                next(new CustomError("Invalid refresh token!", 401));
+                return;
+            }
+        }
+
         next(error);
     }
 };
