@@ -3,15 +3,15 @@ kind: Service
 metadata:
     name: forum-api
     namespace: forum-restapi
-    annotations:
-        run.googleapis.com/cloudsql-instances: forum-restapi:europe-west4:forum-db
-        run.googleapis.com/ingress: all
+    # annotations:
+    #     run.googleapis.com/cloudsql-instances: forum-restapi:europe-west4:forum-db
+    #     run.googleapis.com/ingress: all
 spec:
     template:
         metadata:
-            annotations:
-                run.googleapis.com/cloudsql-instances: forum-restapi:europe-west4:forum-db
-                autoscaling.knative.dev/maxScale: "10"
+            # annotations:
+            #     run.googleapis.com/cloudsql-instances: forum-restapi:europe-west4:forum-db
+            #     autoscaling.knative.dev/maxScale: "10"
         spec:
             serviceAccountName: forum-github-action@forum-restapi.iam.gserviceaccount.com
             containers:
