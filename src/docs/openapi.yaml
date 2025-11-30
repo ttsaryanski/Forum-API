@@ -9,6 +9,9 @@ info:
 
 servers:
     - url: http://localhost:3000/api
+      description: Development server
+    - url: https://forum-api-938001432679.europe-west4.run.app/api
+      description: Production server
 
 paths:
     /auth/register:

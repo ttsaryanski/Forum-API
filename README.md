@@ -1,4 +1,4 @@
-# FORUM API - ⚠️Under development
+# FORUM API - [Live API](https://forum-api-938001432679.europe-west4.run.app) ⚠️Under development
 
 - use /api/docs
 - use /api/news
@@ -14,7 +14,7 @@
 - Express.js
 - TypeScript
 - MongoDB (with Mongoose)
-- PostgreSQL
+- PostgreSQL (with Sequelize)
 - RESTful architecture
 - Middleware and error handling
 - Validation and modular routing
@@ -72,6 +72,23 @@ npm install
 - **GCS_BUCKET_NAME**: Bucket name for GCS claud storage.  
   _Example:_ `your_bucket_name`
 
+### Nodemailer Variables:
+
+- **EMAIL_USER**: Gmail account used for sending automated emails (verification, password reset).  
+  _Example:_ `your_email@gmail.com`
+
+- **EMAIL_PASS**: App-specific password for the Gmail account (not regular password).  
+  _Note:_ Generate an App Password in your Google Account settings.  
+  _Example:_ `abcd efgh ijkl mnop`
+
+- **API_URL**: Base URL of your API server (used in email links for verification).  
+  _Example for development:_ `http://localhost:3000`  
+  _Example for production:_ `https://your-api-domain.com`
+
+- **CLIENT_URL**: Base URL of your frontend application (used for redirects after email actions).  
+  _Example for development:_ `http://localhost:5173`  
+  _Example for production:_ `https://your-frontend-domain.com`
+
 ### Steps to Set Up `.env`:
 
 1. Create a file named `.env` in the root directory.
@@ -87,6 +104,11 @@ npm install
     PG_HOST=<your-database-host>
     PG_PORT=<your-database-port>
     GCS_BUCKET_NAME=<your_bucket_name>
+
+    EMAIL_USER=<your-gmail-address>
+    EMAIL_PASS=<your-gmail-app-password>
+    API_URL=<your-api-base-url>
+    CLIENT_URL=<your-frontend-base-url>
     ```
 
 3. Save the file.
