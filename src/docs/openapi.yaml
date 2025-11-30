@@ -239,6 +239,389 @@ paths:
                         application/json:
                             example:
                                 message: "Internal server error..."
+        post:
+            summary: Updates user profile
+            tags: [Auth]
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: "#/components/schemas/AuthProfileEditRequest"
+            responses:
+                201:
+                    description: OK - User profile updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SimpleUser"
+                400:
+                    description: Bad Request - Invalid data
+                    content:
+                        application/json:
+                            examples:
+                                invalidUserName:
+                                    summary: Invalid username
+                                    value:
+                                        message: "Username should be at least 3 characters long!"
+                                invalidAvatarFile:
+                                    summary: Invalid avatar file type
+                                    value: "Only jpeg, jpg, png and gif files are allowed!"
+                401:
+                    description: Unauthorized - Missing token
+                    content:
+                        application/json:
+                            examples:
+                                missingToken:
+                                    summary: Missing token
+                                    value:
+                                        message: "Missing access token!"
+                                invalidToken:
+                                    summary: Invalid or expired token
+                                    value:
+                                        message: "Invalid or expired access token!"
+                404:
+                    description: Not Found - User does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "User not found!"
+                409:
+                    description: Conflict - Username already taken
+                    content:
+                        application/json:
+                            example:
+                                message: "This username is already taken!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /auth/refresh:
+        post:
+            summary: Refresh access token
+            tags: [Auth]
+            security:
+                - cookieAuth: []
+            responses:
+                200:
+                    description: OK - Access token refreshed successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    accessToken:
+                                        type: string
+                                        example: eyJhbGciOiJIUzI1...
+                401:
+                    description: Unauthorized - Invalid or missing refresh token
+                    content:
+                        application/json:
+                            examples:
+                                noToken:
+                                    summary: No refresh token provided
+                                    value:
+                                        message: "Missing refresh token!"
+                                invalidToken:
+                                    summary: Invalid refresh token
+                                    value:
+                                        message: "Invalid refresh token!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /auth/verify-email/{token}:
+        get:
+            summary: Verify user email address
+            tags: [Auth]
+            parameters:
+                - in: path
+                  name: token
+                  required: true
+                  schema:
+                      type: string
+                  description: Email verification token
+            responses:
+                200:
+                    description: OK - Email verified successfully (redirects to client)
+                    headers:
+                        Location:
+                            description: Redirect to client verification success page
+                            schema:
+                                type: string
+                                example: "http://localhost:5173/auth/verified"
+                400:
+                    description: Bad Request - Missing or invalid token
+                    content:
+                        application/json:
+                            examples:
+                                missingToken:
+                                    summary: Missing verification token
+                                    value:
+                                        message: "Verification token is required!"
+                                invalidTokenType:
+                                    summary: Invalid token type
+                                    value:
+                                        message: "Invalid token type!"
+                                emailAlreadyVerified:
+                                    summary: Email already verified
+                                    value:
+                                        message: "Email is already verified!"
+                401:
+                    description: Unauthorized - Expired or invalid token
+                    content:
+                        application/json:
+                            examples:
+                                expiredToken:
+                                    summary: Expired verification token
+                                    value:
+                                        message: "Verification token has expired. Please request a new verification email."
+                                invalidToken:
+                                    summary: Invalid verification token
+                                    value:
+                                        message: "Invalid verification token!"
+                404:
+                    description: Not Found - User not found
+                    content:
+                        application/json:
+                            example:
+                                message: "User not found!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /auth/resend-email:
+        post:
+            summary: Resend verification email
+            tags: [Auth]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/EmailRequest"
+            responses:
+                200:
+                    description: OK - Verification email resent successfully
+                    content:
+                        application/json:
+                            example:
+                                message: "Verification email resent. Please check your inbox."
+                400:
+                    description: Bad Request - Invalid email or already verified
+                    content:
+                        application/json:
+                            examples:
+                                invalidEmail:
+                                    summary: Invalid email format
+                                    value:
+                                        message: "Invalid email format!"
+                                alreadyVerified:
+                                    summary: Email already verified
+                                    value:
+                                        message: "Email is already verified!"
+                404:
+                    description: Not Found - User with email does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "User with this email does not exist!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Failed to send verification email!"
+
+    /auth/forgot-password:
+        post:
+            summary: Send password reset email
+            tags: [Auth]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/EmailRequest"
+            responses:
+                200:
+                    description: OK - Password reset email sent successfully
+                    content:
+                        application/json:
+                            example:
+                                message: "Verification email sent. Please check your inbox."
+                400:
+                    description: Bad Request - Invalid email format
+                    content:
+                        application/json:
+                            example:
+                                message: "Invalid email format!"
+                404:
+                    description: Not Found - User with email does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "User with this email does not exist!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Failed to send password reset email!"
+
+    /auth/change-password:
+        post:
+            summary: Change user password
+            tags: [Auth]
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ChangePasswordRequest"
+            responses:
+                200:
+                    description: OK - Password changed successfully
+                    content:
+                        application/json:
+                            example:
+                                message: "Password changed successfully!"
+                400:
+                    description: Bad Request - Invalid password format
+                    content:
+                        application/json:
+                            examples:
+                                invalidCurrentPassword:
+                                    summary: Invalid current password format
+                                    value:
+                                        message: "Current password should be at least 6 characters long!"
+                                invalidNewPassword:
+                                    summary: Invalid new password format
+                                    value:
+                                        message: "New password should be at least 6 characters long!"
+                401:
+                    description: Unauthorized - Invalid current password or missing token
+                    content:
+                        application/json:
+                            examples:
+                                wrongPassword:
+                                    summary: Current password is incorrect
+                                    value:
+                                        message: "Current password is incorrect!"
+                                missingToken:
+                                    summary: Missing access token
+                                    value:
+                                        message: "Missing access token!"
+                                invalidToken:
+                                    summary: Invalid or expired access token
+                                    value:
+                                        message: "Invalid or expired access token!"
+                404:
+                    description: Not Found - User not found
+                    content:
+                        application/json:
+                            example:
+                                message: "User not found!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /auth/reset-password:
+        post:
+            summary: Reset password with token
+            tags: [Auth]
+            parameters:
+                - in: query
+                  name: token
+                  required: true
+                  schema:
+                      type: string
+                  description: Password reset token
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/NewPasswordRequest"
+            responses:
+                200:
+                    description: OK - Password reset successfully
+                    content:
+                        application/json:
+                            example:
+                                message: "New password set successfully!"
+                400:
+                    description: Bad Request - Invalid token type or missing token
+                    content:
+                        application/json:
+                            examples:
+                                missingToken:
+                                    summary: Missing reset token
+                                    value:
+                                        message: "Token is required!"
+                                invalidTokenType:
+                                    summary: Invalid token type
+                                    value:
+                                        message: "Invalid token type!"
+                                invalidPassword:
+                                    summary: Invalid password format
+                                    value:
+                                        message: "Password should be at least 6 characters long!"
+                401:
+                    description: Unauthorized - Expired or invalid token
+                    content:
+                        application/json:
+                            examples:
+                                expiredToken:
+                                    summary: Expired reset token
+                                    value:
+                                        message: "Password reset token has expired. Please request a new password reset."
+                                invalidToken:
+                                    summary: Invalid reset token
+                                    value:
+                                        message: "Invalid password reset token!"
+                404:
+                    description: Not Found - User not found
+                    content:
+                        application/json:
+                            example:
+                                message: "No user found to set a new password!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
 
     /news:
         get:
@@ -473,6 +856,28 @@ components:
                     type: string
                     example: eyJhbGciOiJIUzI1...
 
+        AuthProfileEditRequest:
+            type: object
+            required:
+                - username
+                - email
+            properties:
+                username:
+                    type: string
+                    example: mewUsername
+                email:
+                    type: string
+                    format: email
+                    description: |
+                        User email (immutable, cannot be changed).
+                        Must be sent back unchanged by the client.
+                    example: example@email.com
+                avatarUrl:
+                    type: string
+                    format: binary
+                    nullable: true
+                    description: Optional avatar file.
+
         SimpleUser:
             type: object
             properties:
@@ -503,6 +908,41 @@ components:
                     type: string
                     format: date-time
                     example: "2025-05-25T15:04:47.780Z"
+
+        EmailRequest:
+            type: object
+            required:
+                - email
+            properties:
+                email:
+                    type: string
+                    format: email
+                    example: example@email.com
+
+        ChangePasswordRequest:
+            type: object
+            required:
+                - currentPassword
+                - newPassword
+            properties:
+                currentPassword:
+                    type: string
+                    example: currentPassword123
+                    description: User's current password
+                newPassword:
+                    type: string
+                    example: newPassword123
+                    description: New password (minimum 6 characters)
+
+        NewPasswordRequest:
+            type: object
+            required:
+                - password
+            properties:
+                password:
+                    type: string
+                    example: newPassword123
+                    description: New password (minimum 6 characters)
 
         SimpleNews:
             type: object

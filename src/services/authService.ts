@@ -36,10 +36,8 @@ interface PasswordResetPayload {
     exp?: number;
 }
 
-const apiUrl = isDev ? "http://localhost:3000" : process.env.CLIENT_URL;
-const clientUrl = isDev
-    ? "http://localhost:5173"
-    : process.env.FORUM_CLIENT_URL;
+const apiUrl = isDev ? "http://localhost:3000" : process.env.API_URL;
+const clientUrl = isDev ? "http://localhost:5173" : process.env.CLIENT_URL;
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -130,6 +128,8 @@ export const authService: AuthServicesTypes = {
         if (!isValid) {
             throw new CustomError("Password does not match!", 401);
         }
+
+        await user.update({ last_login: new Date() }, { silent: true });
 
         return createAccessTokens({
             id: user.id!.toString(),
@@ -257,7 +257,7 @@ export const authService: AuthServicesTypes = {
         }
 
         if (user.isVerified) {
-            throw new CustomError("Email is already verified.", 400);
+            throw new CustomError("Email is already verified!", 400);
         }
         const verificationToken = await signJwt(
             {

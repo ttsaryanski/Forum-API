@@ -11,7 +11,7 @@ export default async function mongooseInit() {
             dbName: "NewsDB",
         });
 
-        console.log("Successfully connect to cloud DB!");
+        console.log("Successfully connected to MongoDB database!");
     } catch (error) {
         console.log("Failed to connect to cloud DB!");
 

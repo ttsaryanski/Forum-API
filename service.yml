@@ -74,13 +74,13 @@ spec:
                             secretKeyRef:
                                 name: email-pass
                                 key: latest
+                      - name: API_URL
+                        valueFrom:
+                            secretKeyRef:
+                                name: api-url
+                                key: latest
                       - name: CLIENT_URL
                         valueFrom:
                             secretKeyRef:
                                 name: client-url
-                                key: latest
-                      - name: FORUM_CLIENT_URL
-                        valueFrom:
-                            secretKeyRef:
-                                name: forum-client-url
                                 key: latest
