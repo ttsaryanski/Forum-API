@@ -5,8 +5,8 @@ import { newsController } from "../../../../src/controllers/newsController.js";
 
 import errorHandler from "../../../../src/middlewares/errorHandler.js";
 
-import { NewsServicesTypes } from "../../../../src/types/ServicesTypes.js";
-import { NewsResponseType } from "../../../../src/types/NewsTypes.js";
+import { NewsServicesTypes } from "../../../../src/types/servicesTypes.js";
+import { NewsResponseType } from "../../../../src/types/newsTypes.js";
 import { CreateNewsDataType } from "../../../../src/validators/news/news.schema.js";
 
 const validId = "64b2f9d4f8a1e4e1c5a9c123";

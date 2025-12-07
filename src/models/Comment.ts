@@ -39,6 +39,7 @@ Comment.belongsTo(User, {
 User.hasMany(Comment, { foreignKey: "author_id" });
 
 Comment.belongsTo(Theme, {
+    as: "theme",
     foreignKey: "theme_id",
     onUpdate: "CASCADE",
     onDelete: "CASCADE",

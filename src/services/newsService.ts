@@ -1,14 +1,14 @@
 import { News } from "../models/News.js";
 
-import { NewsServicesTypes } from "../types/ServicesTypes.js";
-import { NewsResponseType } from "../types/NewsTypes.js";
+import { NewsServicesTypes } from "../types/servicesTypes.js";
+import { NewsResponseType } from "../types/newsTypes.js";
 import { CreateNewsDataType } from "../validators/news/news.schema.js";
 
 import { CustomError } from "../utils/errorUtils/customError.js";
 
 export const newsService: NewsServicesTypes = {
     async getAll(): Promise<NewsResponseType[]> {
-        const news = await News.find().select("-__v").lean();
+        const news = await News.find().select("-__v").limit(5).lean();
 
         return news.map((item) => ({
             _id: item._id.toString(),

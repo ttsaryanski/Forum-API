@@ -1,9 +1,16 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/sequelize.js";
 
-import Theme from "./Theme.js";
+interface CategoryAttributes {
+    id?: number;
+    name: string;
+}
 
-const Category = sequelize.define(
+interface CategoryInstance
+    extends Model<CategoryAttributes>,
+        CategoryAttributes {}
+
+const Category = sequelize.define<CategoryInstance>(
     "Category",
     {
         id: {
@@ -23,23 +30,4 @@ const Category = sequelize.define(
     }
 );
 
-const ThemeCategory = sequelize.define(
-    "ThemeCategory",
-    {},
-    { timestamps: false, tableName: "theme_categories" }
-);
-
-Theme.belongsToMany(Category, {
-    through: ThemeCategory,
-    foreignKey: "theme_id",
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
-});
-Category.belongsToMany(Theme, {
-    through: ThemeCategory,
-    foreignKey: "category_id",
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
-});
-
-export { Category, ThemeCategory };
+export default Category;

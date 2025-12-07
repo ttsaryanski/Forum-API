@@ -9,8 +9,8 @@ import { CustomError } from "../utils/errorUtils/customError.js";
 import User from "../models/User.js";
 import RefreshToken from "../models/RefreshToken.js";
 
-import { AuthServicesTypes } from "../types/ServicesTypes.js";
-import { UserResponseType } from "../types/UserTypes.js";
+import { AuthServicesTypes } from "../types/servicesTypes.js";
+import { UserResponseType } from "../types/userTypes.js";
 import {
     RegisterUserDataType,
     LoginUserDataType,

@@ -1,7 +1,7 @@
 import { uploadFileToGCS } from "../utils/upload/gcsUpload.js";
 import { deleteFileFromGCS } from "../utils/upload/gcsDelete.js";
 
-import { GCSServiceTypes } from "../types/ServicesTypes.js";
+import { GCSServiceTypes } from "../types/servicesTypes.js";
 
 export const gcsService: GCSServiceTypes = {
     async uploadFile(file: Express.Multer.File): Promise<string> {

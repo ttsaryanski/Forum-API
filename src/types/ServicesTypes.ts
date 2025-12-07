@@ -1,7 +1,7 @@
-import { NewsResponseType } from "./NewsTypes.js";
+import { NewsResponseType } from "./newsTypes.js";
 import { CreateNewsDataType } from "../validators/news/news.schema.js";
 
-import { UserResponseType } from "./UserTypes.js";
+import { UserResponseType } from "./userTypes.js";
 import {
     RegisterUserDataType,
     LoginUserDataType,
@@ -10,6 +10,13 @@ import {
     EmailDataType,
     NewPasswordDataType,
 } from "../validators/user.schema.js";
+
+import { CategoryResponseType } from "./categoryTypes.js";
+
+import {
+    LastFiveThemesResponseType,
+    ThemeWithDetailsResponseType,
+} from "./themeTypes.js";
 
 export interface NewsServicesTypes {
     getAll(): Promise<NewsResponseType[]>;
@@ -44,4 +51,13 @@ export interface AuthServicesTypes {
 export interface GCSServiceTypes {
     uploadFile(file: Express.Multer.File): Promise<string>;
     deleteFile(filePath: string): Promise<void>;
+}
+
+export interface CategoryServicesTypes {
+    getAll(): Promise<CategoryResponseType[]>;
+}
+
+export interface ThemeServicesTypes {
+    getLastFiveThemes(): Promise<LastFiveThemesResponseType[]>;
+    getById(themeId: string): Promise<ThemeWithDetailsResponseType>;
 }

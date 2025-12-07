@@ -1,6 +1,6 @@
 import { Error as MongooseError, mongo } from "mongoose";
 
-import { ErrorTypes } from "../../types/ErrorTypes.js";
+import { ErrorTypes } from "../../types/errorTypes.js";
 
 type MongoDuplicateError = mongo.MongoServerError & {
     code: 11000;

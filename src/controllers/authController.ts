@@ -3,7 +3,7 @@ import { Router, Response } from "express";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { refreshTokenMiddleware } from "../middlewares/refreshTokenMiddleware.js";
 
-import { AuthServicesTypes } from "../types/ServicesTypes.js";
+import { AuthServicesTypes } from "../types/servicesTypes.js";
 import { AccessTokenUser } from "../services/authService.js";
 
 import { asyncErrorHandler } from "../utils/errorUtils/asyncErrorHandler.js";

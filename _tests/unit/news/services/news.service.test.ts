@@ -2,7 +2,7 @@ import { newsService } from "../../../../src/services/newsService.js";
 
 import { News } from "../../../../src/models/News.js";
 
-import { NewsResponseType } from "../../../../src/types/NewsTypes.js";
+import { NewsResponseType } from "../../../../src/types/newsTypes.js";
 import { CreateNewsDataType } from "../../../../src/validators/news/news.schema.js";
 
 import { CustomError } from "../../../../src/utils/errorUtils/customError.js";

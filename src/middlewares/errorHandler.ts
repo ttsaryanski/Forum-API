@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-import { ErrorTypes } from "../types/ErrorTypes.js";
+import { ErrorTypes } from "../types/errorTypes.js";
 
 import { createErrorMsg } from "../utils/errorUtils/errorUtil.js";
 

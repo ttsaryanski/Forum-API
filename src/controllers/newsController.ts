@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 
-import { NewsServicesTypes } from "../types/ServicesTypes.js";
+import { NewsServicesTypes } from "../types/servicesTypes.js";
 
 import { asyncErrorHandler } from "../utils/errorUtils/asyncErrorHandler.js";
 import { CustomError } from "../utils/errorUtils/customError.js";
