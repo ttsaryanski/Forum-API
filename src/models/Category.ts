@@ -4,6 +4,14 @@ import sequelize from "../config/sequelize.js";
 interface CategoryAttributes {
     id?: number;
     name: string;
+    themes?: Array<{
+        id: number;
+        title: string;
+        updatedAt: Date;
+        author?: {
+            username: string;
+        };
+    }>;
 }
 
 interface CategoryInstance

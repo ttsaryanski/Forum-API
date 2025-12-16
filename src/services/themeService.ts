@@ -1,7 +1,10 @@
+import sequelize from "sequelize";
+
 import Theme from "../models/Theme.js";
 import User from "../models/User.js";
 import Category from "../models/Category.js";
 import Comment from "../models/Comment.js";
+import Like from "../models/Like.js";
 
 import { ThemeServicesTypes } from "../types/servicesTypes.js";
 import {
@@ -22,6 +25,7 @@ export const themeService: ThemeServicesTypes = {
                     as: "author",
                     attributes: ["username"],
                 },
+                { model: Category, as: "category", attributes: ["name"] },
             ],
         });
 
@@ -34,8 +38,8 @@ export const themeService: ThemeServicesTypes = {
             title: theme.title,
             content: theme.content,
             createdAt: theme.createdAt!,
-            author_id: theme.author_id!.toString(),
             author_name: (theme.get("author") as { username: string }).username,
+            category_name: (theme.get("category") as { name: string }).name,
         }));
     },
 
@@ -61,15 +65,34 @@ export const themeService: ThemeServicesTypes = {
                         "createdAt",
                         "updatedAt",
                         "is_edited",
+                        [
+                            sequelize.fn(
+                                "COUNT",
+                                sequelize.col("Comments->likes.id")
+                            ),
+                            "likesCount",
+                        ],
                     ],
                     include: [
                         {
                             model: User,
                             as: "author",
-                            attributes: ["username"],
+                            attributes: ["username", "avatar_url"],
+                        },
+                        {
+                            model: Like,
+                            as: "likes",
+                            attributes: [],
                         },
                     ],
                 },
+            ],
+            group: [
+                "Theme.id",
+                "author.id",
+                "category.id",
+                "Comments.id",
+                "Comments->author.id",
             ],
             order: [["Comments", "createdAt", "ASC"]],
         });
@@ -79,7 +102,7 @@ export const themeService: ThemeServicesTypes = {
         }
 
         return {
-            id: theme.id!.toString(),
+            id: (theme.id || 0).toString(),
             title: theme.title,
             content: theme.content,
             createdAt: theme.createdAt!,

@@ -47,7 +47,7 @@ export function authController(authService: AuthServicesTypes) {
 
     router.post(
         "/login",
-        loginLimiter,
+        //loginLimiter,
         asyncErrorHandler(async (req, res: Response) => {
             const resultData = loginUserSchema.safeParse(req.body);
             if (!resultData.success) {

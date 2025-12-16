@@ -1,9 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/sequelize.js";
 
-import User from "./User.js";
-import Category from "./Category.js";
-
 interface ThemeAttributes {
     id?: number;
     title: string;
@@ -12,7 +9,8 @@ interface ThemeAttributes {
     is_closed?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
-    author_id?: number;
+    author_id: number;
+    category_id: number;
     author?: {
         username: string;
     };
@@ -25,13 +23,11 @@ interface ThemeAttributes {
         createdAt: Date;
         updatedAt: Date;
         is_edited: boolean;
+        likesCount?: number;
         author?: {
             username: string;
+            avatar_url: string;
         };
-    }>;
-    likes?: Array<{
-        id: number;
-        user_id: number;
     }>;
 }
 
@@ -61,26 +57,20 @@ const Theme = sequelize.define<ThemeInstance>(
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
+        author_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "author_id",
+        },
+        category_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "category_id",
+        },
     },
     {
         tableName: "themes",
     }
 );
-
-Theme.belongsTo(User, {
-    as: "author",
-    foreignKey: "author_id",
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
-});
-User.hasMany(Theme, { foreignKey: "author_id" });
-
-Theme.belongsTo(Category, {
-    as: "category",
-    foreignKey: "category_id",
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
-});
-Category.hasMany(Theme, { foreignKey: "category_id" });
 
 export default Theme;

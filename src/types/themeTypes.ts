@@ -3,8 +3,9 @@ export interface LastFiveThemesResponseType {
     title: string;
     content: string;
     createdAt: Date;
-    author_id: string;
+    //author_id: string;
     author_name?: string;
+    category_name?: string;
 }
 
 export interface ThemeWithDetailsResponseType {

@@ -6,6 +6,8 @@ import expressInit from "./config/expressInit.js";
 import routes from "./routes/routes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
+import "./models/associations.js";
+
 interface CsrfError extends Error {
     code?: string;
 }
