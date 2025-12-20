@@ -17,7 +17,7 @@ import { CustomError } from "../utils/errorUtils/customError.js";
 export const themeService: ThemeServicesTypes = {
     async getLastFiveThemes(): Promise<LastFiveThemesResponseType[]> {
         const themes = await Theme.findAll({
-            order: [["createdAt", "DESC"]],
+            order: [["updatedAt", "DESC"]],
             limit: 5,
             include: [
                 {
@@ -37,7 +37,7 @@ export const themeService: ThemeServicesTypes = {
             id: theme.id!.toString(),
             title: theme.title,
             content: theme.content,
-            createdAt: theme.createdAt!,
+            updatedAt: theme.updatedAt!,
             author_name: (theme.get("author") as { username: string }).username,
             category_name: (theme.get("category") as { name: string }).name,
         }));
