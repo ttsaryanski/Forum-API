@@ -11,12 +11,17 @@ import {
     NewPasswordDataType,
 } from "../validators/user.schema.js";
 
-import { CategoryResponseType } from "./categoryTypes.js";
+import {
+    CategoryResponseType,
+    CategoryListResponseType,
+} from "./categoryTypes.js";
 
 import {
     LastFiveThemesResponseType,
     ThemeWithDetailsResponseType,
 } from "./themeTypes.js";
+
+import { CreateThemeDataType } from "../validators/theme.schema.js";
 
 export interface NewsServicesTypes {
     getAll(): Promise<NewsResponseType[]>;
@@ -55,9 +60,11 @@ export interface GCSServiceTypes {
 
 export interface CategoryServicesTypes {
     getAll(): Promise<CategoryResponseType[]>;
+    getList(): Promise<CategoryListResponseType[]>;
 }
 
 export interface ThemeServicesTypes {
     getLastFiveThemes(): Promise<LastFiveThemesResponseType[]>;
     getById(themeId: string): Promise<ThemeWithDetailsResponseType>;
+    create(data: CreateThemeDataType, authorId: number): Promise<string>;
 }

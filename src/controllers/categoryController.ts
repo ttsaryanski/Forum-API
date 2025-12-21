@@ -17,5 +17,14 @@ export function categoryController(categoryService: CategoryServicesTypes) {
         })
     );
 
+    router.get(
+        "/list",
+        asyncErrorHandler(async (req: Request, res: Response) => {
+            const categories = await categoryService.getList();
+
+            res.status(200).json(categories);
+        })
+    );
+
     return router;
 }

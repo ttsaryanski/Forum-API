@@ -3,3 +3,8 @@ export interface CategoryResponseType {
     name: string;
     themes?: {}[];
 }
+
+export interface CategoryListResponseType {
+    id: string;
+    name: string;
+}

@@ -1,11 +1,14 @@
 import { Router, Request, Response } from "express";
 
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+
 import { ThemeServicesTypes } from "../types/servicesTypes.js";
 
 import { asyncErrorHandler } from "../utils/errorUtils/asyncErrorHandler.js";
 import { CustomError } from "../utils/errorUtils/customError.js";
 
 import { postgressIdSchema } from "../validators/postgressId.schema.js";
+import { createThemeSchema } from "../validators/theme.schema.js";
 
 export function themeController(themeService: ThemeServicesTypes) {
     const router = Router();
@@ -30,6 +33,29 @@ export function themeController(themeService: ThemeServicesTypes) {
             const theme = await themeService.getById(resultId.data);
 
             res.status(200).json(theme);
+        })
+    );
+
+    router.post(
+        "/",
+        authMiddleware,
+        asyncErrorHandler(async (req: Request, res: Response) => {
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new CustomError("Unauthorized!", 401);
+            }
+
+            const resultData = createThemeSchema.safeParse(req.body);
+            if (!resultData.success) {
+                throw new CustomError(resultData.error.issues[0].message, 400);
+            }
+
+            const themeId = await themeService.create(
+                resultData.data,
+                Number(userId)
+            );
+
+            res.status(201).json({ themeId });
         })
     );
 

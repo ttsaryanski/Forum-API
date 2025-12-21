@@ -12,6 +12,8 @@ import {
     ThemeWithDetailsResponseType,
 } from "../types/themeTypes.js";
 
+import { CreateThemeDataType } from "../validators/theme.schema.js";
+
 import { CustomError } from "../utils/errorUtils/customError.js";
 
 export const themeService: ThemeServicesTypes = {
@@ -112,5 +114,21 @@ export const themeService: ThemeServicesTypes = {
             comments_content:
                 (theme.get("Comments") as Array<{ content: string }>) || [],
         };
+    },
+
+    async create(data: CreateThemeDataType, authorId: number): Promise<string> {
+        const id = Number(data.categoryId);
+        const newTheme = await Theme.create({
+            category_id: id,
+            title: data.title,
+            content: data.content,
+            author_id: authorId,
+        });
+
+        if (!newTheme) {
+            throw new CustomError("Failed to create theme", 500);
+        }
+
+        return newTheme.id!.toString();
     },
 };
