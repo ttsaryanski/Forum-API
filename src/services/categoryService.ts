@@ -12,7 +12,7 @@ import Theme from "../models/Theme.js";
 import User from "../models/User.js";
 
 export const categoryService: CategoryServicesTypes = {
-    async getAll(): Promise<CategoryResponseType[]> {
+    async getLimit5(): Promise<CategoryResponseType[]> {
         const categories = await Category.findAll({
             include: [
                 {
@@ -53,6 +53,48 @@ export const categoryService: CategoryServicesTypes = {
                 author_name: theme.author?.username || "Unknown",
             })),
         }));
+    },
+
+    async getById(categoryId: string): Promise<CategoryResponseType> {
+        const category = await Category.findByPk(categoryId, {
+            include: [
+                {
+                    model: Theme,
+                    as: "themes",
+                    attributes: [
+                        "id",
+                        "title",
+                        "updatedAt",
+                        "author_id",
+                        "category_id",
+                    ],
+                    order: [["updatedAt", "DESC"]],
+                    include: [
+                        {
+                            model: User,
+                            as: "author",
+                            attributes: ["username"],
+                        },
+                    ],
+                },
+            ],
+            order: [[{ model: Theme, as: "themes" }, "updatedAt", "DESC"]],
+        });
+
+        if (!category) {
+            throw new CustomError("Category not found", 404);
+        }
+
+        return {
+            id: category.id!.toString(),
+            name: category.name,
+            themes: category.themes?.map((theme) => ({
+                id: theme.id,
+                title: theme.title,
+                updatedAt: theme.updatedAt,
+                author_name: theme.author?.username || "Unknown",
+            })),
+        };
     },
 
     async getList(): Promise<CategoryListResponseType[]> {

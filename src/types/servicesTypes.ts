@@ -59,8 +59,9 @@ export interface GCSServiceTypes {
 }
 
 export interface CategoryServicesTypes {
-    getAll(): Promise<CategoryResponseType[]>;
+    getLimit5(): Promise<CategoryResponseType[]>;
     getList(): Promise<CategoryListResponseType[]>;
+    getById(categoryId: string): Promise<CategoryResponseType>;
 }
 
 export interface ThemeServicesTypes {
