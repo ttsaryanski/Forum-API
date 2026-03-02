@@ -15,8 +15,7 @@ interface RefreshTokenAttributes {
 }
 
 interface RefreshTokenInstance
-    extends Model<RefreshTokenAttributes>,
-        RefreshTokenAttributes {}
+    extends Model<RefreshTokenAttributes>, RefreshTokenAttributes {}
 
 const refreshTokenMiddleware = async (
     req: Request,

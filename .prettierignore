@@ -1,2 +1,7 @@
-*.json
+#*.json
+*.yml
+*.yaml
+
+node_modules/
 dist/
+build/

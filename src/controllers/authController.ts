@@ -47,7 +47,7 @@ export function authController(authService: AuthServicesTypes) {
 
     router.post(
         "/login",
-        //loginLimiter,
+        loginLimiter,
         asyncErrorHandler(async (req, res: Response) => {
             const resultData = loginUserSchema.safeParse(req.body);
             if (!resultData.success) {
@@ -160,7 +160,7 @@ export function authController(authService: AuthServicesTypes) {
         "/verify-email/:token",
         asyncErrorHandler(async (req, res) => {
             const token = req.params.token;
-            if (!token) {
+            if (!token || typeof token !== "string") {
                 throw new CustomError("Verification token is required!", 400);
             }
 

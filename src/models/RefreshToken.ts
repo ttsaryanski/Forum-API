@@ -11,8 +11,7 @@ interface RefreshTokenAttributes {
 }
 
 interface RefreshTokenInstance
-    extends Model<RefreshTokenAttributes>,
-        RefreshTokenAttributes {}
+    extends Model<RefreshTokenAttributes>, RefreshTokenAttributes {}
 
 const RefreshToken = sequelize.define<RefreshTokenInstance>(
     "RefreshToken",

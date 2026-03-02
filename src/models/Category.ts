@@ -15,8 +15,7 @@ interface CategoryAttributes {
 }
 
 interface CategoryInstance
-    extends Model<CategoryAttributes>,
-        CategoryAttributes {}
+    extends Model<CategoryAttributes>, CategoryAttributes {}
 
 const Category = sequelize.define<CategoryInstance>(
     "Category",
