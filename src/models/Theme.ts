@@ -15,6 +15,7 @@ interface ThemeAttributes {
         username: string;
     };
     category?: {
+        id: string;
         name: string;
     };
     comments?: Array<{

@@ -1,7 +1,23 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/sequelize.js";
 
-const Comment = sequelize.define(
+interface CommentAttributes {
+    id?: number;
+    content: string;
+    is_edited?: boolean;
+    is_deleted?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+    author_id: number;
+    theme_id: number;
+    author?: {
+        username: string;
+    };
+}
+
+interface CommentInstance extends Model<CommentAttributes>, CommentAttributes {}
+
+const Comment = sequelize.define<CommentInstance>(
     "Comment",
     {
         id: {
@@ -20,6 +36,16 @@ const Comment = sequelize.define(
         is_deleted: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
+        },
+        author_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "author_id",
+        },
+        theme_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "theme_id",
         },
     },
     {

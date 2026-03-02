@@ -22,6 +22,7 @@ import {
 } from "./themeTypes.js";
 
 import { CreateThemeDataType } from "../validators/theme.schema.js";
+import { CreateCommentDataType } from "../validators/comment.schema.js";
 
 export interface NewsServicesTypes {
     getAll(): Promise<NewsResponseType[]>;
@@ -68,4 +69,8 @@ export interface ThemeServicesTypes {
     getLastFiveThemes(): Promise<LastFiveThemesResponseType[]>;
     getById(themeId: string): Promise<ThemeWithDetailsResponseType>;
     create(data: CreateThemeDataType, authorId: number): Promise<string>;
+}
+
+export interface CommentServicesTypes {
+    create(data: CreateCommentDataType, authorId: number): Promise<string>;
 }

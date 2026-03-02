@@ -3,8 +3,8 @@ export interface LastFiveThemesResponseType {
     title: string;
     content: string;
     updatedAt: Date;
-    //author_id: string;
     author_name?: string;
+    category_id?: string;
     category_name?: string;
 }
 

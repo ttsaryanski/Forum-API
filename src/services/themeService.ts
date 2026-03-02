@@ -27,7 +27,7 @@ export const themeService: ThemeServicesTypes = {
                     as: "author",
                     attributes: ["username"],
                 },
-                { model: Category, as: "category", attributes: ["name"] },
+                { model: Category, as: "category", attributes: ["id", "name"] },
             ],
         });
 
@@ -41,6 +41,7 @@ export const themeService: ThemeServicesTypes = {
             content: theme.content,
             updatedAt: theme.updatedAt!,
             author_name: (theme.get("author") as { username: string }).username,
+            category_id: (theme.get("category") as { id: string }).id,
             category_name: (theme.get("category") as { name: string }).name,
         }));
     },

@@ -19,7 +19,7 @@ export const newsService: NewsServicesTypes = {
     },
 
     async create(data: CreateNewsDataType): Promise<NewsResponseType> {
-        const newNews = (await News.create(data)) as NewsResponseType;
+        const newNews = await News.create(data);
         return {
             _id: newNews._id.toString(),
             title: newNews.title,
@@ -32,10 +32,10 @@ export const newsService: NewsServicesTypes = {
         newsId: string,
         data: CreateNewsDataType
     ): Promise<NewsResponseType> {
-        const updatedNews = (await News.findByIdAndUpdate(newsId, data, {
+        const updatedNews = await News.findByIdAndUpdate(newsId, data, {
             runValidators: true,
             new: true,
-        })) as NewsResponseType;
+        });
 
         if (!updatedNews) {
             throw new CustomError("News not found!", 404);
@@ -57,7 +57,7 @@ export const newsService: NewsServicesTypes = {
     },
 
     async getById(newsId: string): Promise<NewsResponseType> {
-        const news = (await News.findById(newsId)) as NewsResponseType;
+        const news = await News.findById(newsId);
 
         if (!news) {
             throw new CustomError("There is no news with this id!", 404);
