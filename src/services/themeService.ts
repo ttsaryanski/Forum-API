@@ -10,6 +10,7 @@ import { ThemeServicesTypes } from "../types/servicesTypes.js";
 import {
     LastFiveThemesResponseType,
     ThemeWithDetailsResponseType,
+    PaginatedThemeResponseType,
 } from "../types/themeTypes.js";
 
 import { CreateThemeDataType } from "../validators/theme.schema.js";
@@ -131,5 +132,94 @@ export const themeService: ThemeServicesTypes = {
         }
 
         return newTheme.id!.toString();
+    },
+
+    async getByIdPaginated(
+        themeId: string,
+        page: number,
+        limit: number
+    ): Promise<PaginatedThemeResponseType> {
+        const offset = (page - 1) * limit;
+
+        const theme = await Theme.findByPk(themeId, {
+            include: [
+                {
+                    model: User,
+                    as: "author",
+                    attributes: ["username"],
+                },
+                {
+                    model: Category,
+                    as: "category",
+                    attributes: ["name"],
+                },
+            ],
+        });
+        if (!theme) {
+            throw new CustomError("Theme not found", 404);
+        }
+
+        const { rows: comments, count } = await Comment.findAndCountAll({
+            where: { theme_id: themeId },
+            attributes: [
+                "id",
+                "content",
+                "createdAt",
+                "updatedAt",
+                "is_edited",
+                [
+                    sequelize.fn("COUNT", sequelize.col("likes.id")),
+                    "likesCount",
+                ],
+            ],
+            include: [
+                {
+                    model: User,
+                    as: "author",
+                    attributes: ["username", "avatar_url"],
+                },
+                {
+                    model: Like,
+                    as: "likes",
+                    attributes: [],
+                },
+            ],
+            group: [
+                "Comment.id",
+                "Comment.content",
+                "Comment.createdAt",
+                "Comment.updatedAt",
+                "Comment.is_edited",
+                "Comment.author_id",
+                "author.id",
+                "author.username",
+                "author.avatar_url",
+            ],
+            order: [["createdAt", "DESC"]],
+            limit,
+            offset,
+            subQuery: false,
+        });
+
+        const totalComments = Array.isArray(count) ? count.length : count;
+
+        return {
+            data: {
+                id: theme.id!.toString(),
+                title: theme.title,
+                content: theme.content,
+                createdAt: theme.createdAt!,
+                updatedAt: theme.updatedAt!,
+                author_name: theme.author?.username,
+                category_name: theme.category?.name,
+                comments_content: comments,
+            },
+            pagination: {
+                page,
+                limit,
+                total: totalComments,
+                pages: Math.ceil(totalComments / limit),
+            },
+        };
     },
 };

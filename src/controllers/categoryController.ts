@@ -42,5 +42,26 @@ export function categoryController(categoryService: CategoryServicesTypes) {
         })
     );
 
+    router.get(
+        "/:id/paginated",
+        asyncErrorHandler(async (req: Request, res: Response) => {
+            const resultId = postgressIdSchema.safeParse(req.params.id);
+            if (!resultId.success) {
+                throw new CustomError(resultId.error.issues[0].message, 400);
+            }
+
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 5;
+
+            const category = await categoryService.getByIdPaginated(
+                resultId.data,
+                page,
+                limit
+            );
+
+            res.status(200).json(category);
+        })
+    );
+
     return router;
 }

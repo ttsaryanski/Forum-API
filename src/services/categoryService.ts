@@ -4,6 +4,7 @@ import { CategoryServicesTypes } from "../types/servicesTypes.js";
 import {
     CategoryResponseType,
     CategoryListResponseType,
+    PaginatedCategoryResponse,
 } from "../types/categoryTypes.js";
 
 import { CustomError } from "../utils/errorUtils/customError.js";
@@ -108,5 +109,56 @@ export const categoryService: CategoryServicesTypes = {
             id: category.id!.toString(),
             name: category.name,
         }));
+    },
+
+    async getByIdPaginated(
+        categoryId: string,
+        page: number,
+        limit: number
+    ): Promise<PaginatedCategoryResponse> {
+        const offset = (page - 1) * limit;
+
+        const category = await Category.findByPk(categoryId, {
+            attributes: ["id", "name"],
+        });
+        if (!category) {
+            throw new CustomError("Category not found", 404);
+        }
+
+        const { rows: themes, count: totalThemes } =
+            await Theme.findAndCountAll({
+                where: { category_id: categoryId },
+                attributes: ["id", "title", "updatedAt", "author_id"],
+                include: [
+                    {
+                        model: User,
+                        as: "author",
+                        attributes: ["username"],
+                    },
+                ],
+                order: [["updatedAt", "DESC"]],
+                limit,
+                offset,
+            });
+        const totalPages = Math.ceil(totalThemes / limit);
+
+        return {
+            data: {
+                id: category.id!.toString(),
+                name: category.name,
+                themes: themes?.map((theme) => ({
+                    id: theme.id,
+                    title: theme.title,
+                    updatedAt: theme.updatedAt,
+                    author_name: theme.author?.username || "Unknown",
+                })),
+            },
+            pagination: {
+                page,
+                limit,
+                total: totalThemes,
+                pages: totalPages,
+            },
+        };
     },
 };

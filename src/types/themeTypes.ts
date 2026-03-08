@@ -18,3 +18,13 @@ export interface ThemeWithDetailsResponseType {
     category_name?: string;
     comments_content?: {}[];
 }
+
+export interface PaginatedThemeResponseType {
+    data: ThemeWithDetailsResponseType;
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        pages: number;
+    };
+}

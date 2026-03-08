@@ -14,11 +14,13 @@ import {
 import {
     CategoryResponseType,
     CategoryListResponseType,
+    PaginatedCategoryResponse,
 } from "./categoryTypes.js";
 
 import {
     LastFiveThemesResponseType,
     ThemeWithDetailsResponseType,
+    PaginatedThemeResponseType,
 } from "./themeTypes.js";
 
 import { CreateThemeDataType } from "../validators/theme.schema.js";
@@ -63,12 +65,22 @@ export interface CategoryServicesTypes {
     getLimit5(): Promise<CategoryResponseType[]>;
     getList(): Promise<CategoryListResponseType[]>;
     getById(categoryId: string): Promise<CategoryResponseType>;
+    getByIdPaginated(
+        categoryId: string,
+        page: number,
+        limit: number
+    ): Promise<PaginatedCategoryResponse>;
 }
 
 export interface ThemeServicesTypes {
     getLastFiveThemes(): Promise<LastFiveThemesResponseType[]>;
     getById(themeId: string): Promise<ThemeWithDetailsResponseType>;
     create(data: CreateThemeDataType, authorId: number): Promise<string>;
+    getByIdPaginated(
+        themeId: string,
+        page: number,
+        limit: number
+    ): Promise<PaginatedThemeResponseType>;
 }
 
 export interface CommentServicesTypes {
