@@ -27,16 +27,16 @@ jobs:
             - name: Set up gcloud CLI
               uses: google-github-actions/setup-gcloud@v1
 
-            - name: Fetch Secrets from GCP Secret Manager
-              run: |
-                  echo "JWT_SECRET=$(gcloud secrets versions access latest --secret=jwt-secret)" >> $GITHUB_ENV
-                  echo "JWT_REFRESH_SECRET=$(gcloud secrets versions access latest --secret=jwt-refresh-secret)" >> $GITHUB_ENV
-                  echo "GCS_BUCKET_NAME=$(gcloud secrets versions access latest --secret=gcs-bucket-name)" >> $GITHUB_ENV
-                  echo "POSTGRES_DB=$(gcloud secrets versions access latest --secret=postgres-db)" >> $GITHUB_ENV
-                  echo "POSTGRES_USER=$(gcloud secrets versions access latest --secret=postgres-user)" >> $GITHUB_ENV
-                  echo "POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret=postgres-password)" >> $GITHUB_ENV
-                  echo "PG_HOST=$(gcloud secrets versions access latest --secret=pg-host)" >> $GITHUB_ENV
-                  echo "PG_PORT=$(gcloud secrets versions access latest --secret=pg-port)" >> $GITHUB_ENV
+            # - name: Fetch Secrets from GCP Secret Manager
+            #   run: |
+            #       echo "JWT_SECRET=$(gcloud secrets versions access latest --secret=jwt-secret)" >> $GITHUB_ENV
+            #       echo "JWT_REFRESH_SECRET=$(gcloud secrets versions access latest --secret=jwt-refresh-secret)" >> $GITHUB_ENV
+            #       echo "GCS_BUCKET_NAME=$(gcloud secrets versions access latest --secret=gcs-bucket-name)" >> $GITHUB_ENV
+            #       echo "POSTGRES_DB=$(gcloud secrets versions access latest --secret=postgres-db)" >> $GITHUB_ENV
+            #       echo "POSTGRES_USER=$(gcloud secrets versions access latest --secret=postgres-user)" >> $GITHUB_ENV
+            #       echo "POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret=postgres-password)" >> $GITHUB_ENV
+            #       echo "PG_HOST=$(gcloud secrets versions access latest --secret=pg-host)" >> $GITHUB_ENV
+            #       echo "PG_PORT=$(gcloud secrets versions access latest --secret=pg-port)" >> $GITHUB_ENV
 
             - name: Set up Node.js
               uses: actions/setup-node@v3
@@ -47,7 +47,9 @@ jobs:
               run: npm install
 
             - name: Run DB migrations
-              run: npx sequelize-cli db:migrate --env production --config config/config.cjs
+              run: npx sequelize-cli db:migrate --url "$DATABASE_URL"
+              env:
+                DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
             # - name: Run Prettier check
             #   run: npm run format:check
