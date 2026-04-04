@@ -47,7 +47,7 @@ jobs:
               run: npm install
 
             - name: Run DB migrations
-              run: npx sequelize-cli db:migrate --url "$DATABASE_URL"
+              run: npx sequelize-cli db:migrate --env production
               env:
                 DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
