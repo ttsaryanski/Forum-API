@@ -5,6 +5,7 @@ import Theme from "./Theme.js";
 import Comment from "./Comment.js";
 import Like from "./Like.js";
 import Category from "./Category.js";
+import Message from "./messages.js";
 
 // User - Theme relations
 Theme.belongsTo(User, {
@@ -69,6 +70,24 @@ Category.hasMany(Theme, {
     onUpdate: "CASCADE",
     onDelete: "CASCADE",
 });
+
+// Message - User relations
+Message.belongsTo(User, {
+    as: "author",
+    foreignKey: "author_id",
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+});
+User.hasMany(Message, { foreignKey: "author_id" });
+
+// Message - Category relations
+Message.belongsTo(Category, {
+    as: "category",
+    foreignKey: "category_id",
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+});
+Category.hasMany(Message, { as: "messages", foreignKey: "category_id" });
 
 // Comment - Comment relations (self-referencing for replies)
 Comment.belongsTo(Comment, {

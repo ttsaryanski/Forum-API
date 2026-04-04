@@ -26,6 +26,8 @@ import {
 import { CreateThemeDataType } from "../validators/theme.schema.js";
 import { CreateCommentDataType } from "../validators/comment.schema.js";
 
+import { PaginatedMessageResponseType } from "./messageTypes.js";
+
 export interface NewsServicesTypes {
     getAll(): Promise<NewsResponseType[]>;
     create(data: CreateNewsDataType): Promise<NewsResponseType>;
@@ -85,4 +87,12 @@ export interface ThemeServicesTypes {
 
 export interface CommentServicesTypes {
     create(data: CreateCommentDataType, authorId: number): Promise<string>;
+}
+
+export interface MessageServicesTypes {
+    getByCategoryIdPaginated(
+        categoryId: string,
+        page: number,
+        limit: number
+    ): Promise<PaginatedMessageResponseType>;
 }

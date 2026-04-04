@@ -1,7 +1,7 @@
 import request from "supertest";
 import mongoose from "mongoose";
 
-import app from "../../../src/app";
+import app from "../../../src/app.js";
 import { News, INews } from "../../../src/models/News.js";
 
 import { CreateNewsDataType } from "../../../src/validators/news/news.schema.js";
