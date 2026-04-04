@@ -47,7 +47,9 @@ jobs:
               run: npm install
 
             - name: Run DB migrations
-              run: npx sequelize-cli db:migrate --url ${{ secrets.DATABASE_URL }}
+              run: npx sequelize-cli db:migrate --url "$DATABASE_URL"
+              env:
+                DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
             # - name: Run Prettier check
             #   run: npm run format:check
