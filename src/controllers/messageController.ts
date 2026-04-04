@@ -5,8 +5,6 @@ import { MessageServicesTypes } from "../types/servicesTypes.js";
 import { asyncErrorHandler } from "../utils/errorUtils/asyncErrorHandler.js";
 import { CustomError } from "../utils/errorUtils/customError.js";
 
-import { postgressIdSchema } from "../validators/postgressId.schema.js";
-
 export function messageController(messageService: MessageServicesTypes) {
     const router = Router();
 
