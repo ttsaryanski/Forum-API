@@ -31,7 +31,7 @@ jobs:
               run: |
                   echo "JWT_SECRET=$(gcloud secrets versions access latest --secret=jwt-secret)" >> $GITHUB_ENV
                   echo "JWT_REFRESH_SECRET=$(gcloud secrets versions access latest --secret=jwt-refresh-secret)" >> $GITHUB_ENV
-                  echo "GCS_BUCKET_NAME=$(gcloud secrets versions access latest --secret=gcp-bucket-name)" >> $GITHUB_ENV
+                  echo "GCS_BUCKET_NAME=$(gcloud secrets versions access latest --secret=gcs-bucket-name)" >> $GITHUB_ENV
                   echo "POSTGRES_DB=$(gcloud secrets versions access latest --secret=postgres-db)" >> $GITHUB_ENV
                   echo "POSTGRES_USER=$(gcloud secrets versions access latest --secret=postgres-user)" >> $GITHUB_ENV
                   echo "POSTGRES_PASSWORD=$(gcloud secrets versions access latest --secret=postgres-password)" >> $GITHUB_ENV
