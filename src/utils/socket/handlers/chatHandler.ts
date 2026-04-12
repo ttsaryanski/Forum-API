@@ -63,4 +63,17 @@ export const registerChatHandlers = (
             io.to(categoryId).emit("receive_message", message);
         }
     );
+
+    socket.on("typing", ({ categoryId }) => {
+        socket.to(categoryId).emit("typing", {
+            userId: socket.data.user?.id,
+            username: socket.data.user?.username,
+        });
+    });
+
+    socket.on("stop_typing", ({ categoryId }) => {
+        socket.to(categoryId).emit("stop_typing", {
+            userId: socket.data.user?.id,
+        });
+    });
 };
