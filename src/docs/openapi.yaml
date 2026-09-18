@@ -242,7 +242,7 @@ paths:
                         application/json:
                             example:
                                 message: "Internal server error..."
-        post:
+        put:
             summary: Updates user profile
             tags: [Auth]
             security:
@@ -799,6 +799,449 @@ paths:
                             example:
                                 message: "Internal server error..."
 
+    /categories/limit5:
+        get:
+            summary: Gets up to 5 categories with their latest themes
+            tags: [Categories]
+            responses:
+                200:
+                    description: Ok - Successfully retrieved categories
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/CategoryWithThemes"
+                404:
+                    description: Not Found - No categories found
+                    content:
+                        application/json:
+                            example:
+                                message: "Categories not found"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /categories/list:
+        get:
+            summary: Gets a minimal list of all categories (id and name only)
+            tags: [Categories]
+            responses:
+                200:
+                    description: Ok - Successfully retrieved categories list
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/CategoryListItem"
+                404:
+                    description: Not Found - No categories found
+                    content:
+                        application/json:
+                            example:
+                                message: "Categories not found"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /categories/{id}:
+        get:
+            summary: Gets a category by ID with all its themes
+            tags: [Categories]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: integer
+                  description: PostgresDB numeric ID of the category
+            responses:
+                200:
+                    description: Ok - Successfully retrieved category
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/CategoryWithThemes"
+                400:
+                    description: Bad Request - Invalid ID
+                    content:
+                        application/json:
+                            example:
+                                message: "Id must be a valid PostgresDB id!"
+                404:
+                    description: Not Found - Category does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "Category not found"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /categories/{id}/paginated:
+        get:
+            summary: Gets a category by ID with its themes paginated
+            tags: [Categories]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: integer
+                  description: PostgresDB numeric ID of the category
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 5
+                  description: Number of themes per page
+            responses:
+                200:
+                    description: Ok - Successfully retrieved paginated category
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/PaginatedCategoryResponse"
+                400:
+                    description: Bad Request - Invalid ID
+                    content:
+                        application/json:
+                            example:
+                                message: "Id must be a valid PostgresDB id!"
+                404:
+                    description: Not Found - Category does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "Category not found"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /themes/last-five:
+        get:
+            summary: Gets the last 5 recently updated themes
+            tags: [Themes]
+            responses:
+                200:
+                    description: Ok - Successfully retrieved themes
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/LastFiveTheme"
+                404:
+                    description: Not Found - No themes found
+                    content:
+                        application/json:
+                            example:
+                                message: "Themes not found"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /themes:
+        post:
+            summary: Creates a new theme
+            tags: [Themes]
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/CreateThemeRequest"
+            responses:
+                201:
+                    description: Created - Theme successfully created
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    themeId:
+                                        type: string
+                                        example: "42"
+                400:
+                    description: Bad Request - Invalid data
+                    content:
+                        application/json:
+                            examples:
+                                invalidCategoryId:
+                                    summary: Invalid category ID
+                                    value:
+                                        message: "Id must be a valid PostgresDB id!"
+                                invalidTitle:
+                                    summary: Invalid title
+                                    value:
+                                        message: "Title should be at least 5 characters long!"
+                                invalidContent:
+                                    summary: Invalid content
+                                    value:
+                                        message: "Content should be at least 10 characters long!"
+                401:
+                    description: Unauthorized - Missing or invalid token
+                    content:
+                        application/json:
+                            examples:
+                                missingToken:
+                                    summary: Missing token
+                                    value:
+                                        message: "Missing access token!"
+                                invalidToken:
+                                    summary: Invalid or expired token
+                                    value:
+                                        message: "Invalid or expired access token!"
+                                unauthorized:
+                                    summary: No user in token
+                                    value:
+                                        message: "Unauthorized!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /themes/{id}:
+        get:
+            summary: Gets a theme by ID with its comments
+            tags: [Themes]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: integer
+                  description: PostgresDB numeric ID of the theme
+            responses:
+                200:
+                    description: Ok - Successfully retrieved theme
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ThemeWithDetails"
+                400:
+                    description: Bad Request - Invalid ID
+                    content:
+                        application/json:
+                            example:
+                                message: "Id must be a valid PostgresDB id!"
+                404:
+                    description: Not Found - Theme does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "Theme not found"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /themes/{id}/paginated:
+        get:
+            summary: Gets a theme by ID with its comments paginated
+            tags: [Themes]
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: integer
+                  description: PostgresDB numeric ID of the theme
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 5
+                  description: Number of comments per page
+            responses:
+                200:
+                    description: Ok - Successfully retrieved paginated theme
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/PaginatedThemeResponse"
+                400:
+                    description: Bad Request - Invalid ID
+                    content:
+                        application/json:
+                            example:
+                                message: "Id must be a valid PostgresDB id!"
+                404:
+                    description: Not Found - Theme does not exist
+                    content:
+                        application/json:
+                            example:
+                                message: "Theme not found"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /comments:
+        post:
+            summary: Creates a new comment on a theme
+            tags: [Comments]
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/CreateCommentRequest"
+            responses:
+                201:
+                    description: Created - Comment successfully created
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    commentId:
+                                        type: string
+                                        example: "15"
+                400:
+                    description: Bad Request - Invalid data
+                    content:
+                        application/json:
+                            examples:
+                                invalidThemeId:
+                                    summary: Invalid theme ID
+                                    value:
+                                        message: "Id must be a valid PostgresDB id!"
+                                invalidContent:
+                                    summary: Invalid content
+                                    value:
+                                        message: "Comment should be at least 10 characters long!"
+                401:
+                    description: Unauthorized - Missing or invalid token
+                    content:
+                        application/json:
+                            examples:
+                                missingToken:
+                                    summary: Missing token
+                                    value:
+                                        message: "Missing access token!"
+                                invalidToken:
+                                    summary: Invalid or expired token
+                                    value:
+                                        message: "Invalid or expired access token!"
+                                unauthorized:
+                                    summary: No user in token
+                                    value:
+                                        message: "Unauthorized!"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
+    /messages/paginated:
+        get:
+            summary: Gets paginated messages for a chat room
+            tags: [Messages]
+            parameters:
+                - in: query
+                  name: roomId
+                  required: true
+                  schema:
+                      type: integer
+                  description: Category ID used as the chat room identifier
+                - in: query
+                  name: page
+                  required: false
+                  schema:
+                      type: integer
+                      default: 1
+                  description: Page number
+                - in: query
+                  name: limit
+                  required: false
+                  schema:
+                      type: integer
+                      default: 50
+                  description: Number of messages per page
+            responses:
+                200:
+                    description: Ok - Successfully retrieved messages
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/PaginatedMessageResponse"
+                400:
+                    description: Bad Request - Missing room ID
+                    content:
+                        application/json:
+                            example:
+                                message: "Category ID is required"
+                429:
+                    $ref: "#/components/responses/TooManyRequests"
+                500:
+                    description: Internal Server Error - Server error
+                    content:
+                        application/json:
+                            example:
+                                message: "Internal server error..."
+
 components:
     securitySchemes:
         bearerAuth:
@@ -994,3 +1437,237 @@ components:
                 content:
                     type: string
                     example: "Edited content"
+
+        Pagination:
+            type: object
+            properties:
+                page:
+                    type: integer
+                    example: 1
+                limit:
+                    type: integer
+                    example: 5
+                total:
+                    type: integer
+                    example: 20
+                pages:
+                    type: integer
+                    example: 4
+
+        CategoryThemeSummary:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    example: 7
+                title:
+                    type: string
+                    example: "Theme title"
+                updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-05-25T15:04:47.780Z"
+                author_name:
+                    type: string
+                    example: "exampleUser"
+
+        CategoryWithThemes:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: "3"
+                name:
+                    type: string
+                    example: "General"
+                themes:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/CategoryThemeSummary"
+
+        CategoryListItem:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: "3"
+                name:
+                    type: string
+                    example: "General"
+
+        PaginatedCategoryResponse:
+            type: object
+            properties:
+                data:
+                    $ref: "#/components/schemas/CategoryWithThemes"
+                pagination:
+                    $ref: "#/components/schemas/Pagination"
+
+        LastFiveTheme:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: "12"
+                title:
+                    type: string
+                    example: "Theme title"
+                content:
+                    type: string
+                    example: "Theme content"
+                updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-05-25T15:04:47.780Z"
+                author_name:
+                    type: string
+                    example: "exampleUser"
+                category_id:
+                    type: string
+                    example: "3"
+                category_name:
+                    type: string
+                    example: "General"
+
+        CommentInTheme:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    example: 5
+                content:
+                    type: string
+                    example: "This is a comment"
+                createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-05-25T15:04:47.780Z"
+                updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-05-25T15:04:47.780Z"
+                is_edited:
+                    type: boolean
+                    example: false
+                likesCount:
+                    type: integer
+                    example: 3
+                author:
+                    type: object
+                    properties:
+                        username:
+                            type: string
+                            example: "exampleUser"
+                        avatar_url:
+                            type: string
+                            example: "https://example.com/avatar.jpg"
+
+        ThemeWithDetails:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: "12"
+                title:
+                    type: string
+                    example: "Theme title"
+                content:
+                    type: string
+                    example: "Theme content"
+                createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-05-25T15:04:47.780Z"
+                updatedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-05-25T15:04:47.780Z"
+                author_name:
+                    type: string
+                    example: "exampleUser"
+                category_name:
+                    type: string
+                    example: "General"
+                comments_content:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/CommentInTheme"
+
+        PaginatedThemeResponse:
+            type: object
+            properties:
+                data:
+                    $ref: "#/components/schemas/ThemeWithDetails"
+                pagination:
+                    $ref: "#/components/schemas/Pagination"
+
+        CreateThemeRequest:
+            type: object
+            required:
+                - categoryId
+                - title
+                - content
+            properties:
+                categoryId:
+                    type: integer
+                    example: 3
+                    description: PostgresDB numeric ID of the category
+                title:
+                    type: string
+                    example: "My new theme"
+                    description: At least 5 characters
+                content:
+                    type: string
+                    example: "This is the theme content"
+                    description: At least 10 characters
+
+        CreateCommentRequest:
+            type: object
+            required:
+                - themeId
+                - content
+            properties:
+                themeId:
+                    type: integer
+                    example: 12
+                    description: PostgresDB numeric ID of the theme
+                content:
+                    type: string
+                    example: "This is my comment on the theme"
+                    description: At least 10 characters
+
+        MessageResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: "88"
+                content:
+                    type: string
+                    example: "Hello everyone!"
+                createdAt:
+                    type: string
+                    format: date-time
+                    example: "2025-05-25T15:04:47.780Z"
+                author:
+                    type: object
+                    properties:
+                        id:
+                            type: integer
+                            example: 5
+                        username:
+                            type: string
+                            example: "exampleUser"
+                        avatar_url:
+                            type: string
+                            example: "https://example.com/avatar.jpg"
+
+        PaginatedMessageResponse:
+            type: object
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/MessageResponse"
+                pagination:
+                    $ref: "#/components/schemas/Pagination"
