@@ -1,4 +1,4 @@
-FROM node:26.13.0-bookworm-slim AS builder
+FROM node:22 AS builder
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:26.13.0-bookworm-slim
+FROM node:22
 
 ENV PORT=8080
 ENV HOST=0.0.0.0

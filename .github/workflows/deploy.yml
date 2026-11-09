@@ -39,13 +39,12 @@ jobs:
             #       echo "PG_PORT=$(gcloud secrets versions access latest --secret=pg-port)" >> $GITHUB_ENV
 
             - name: Set up Node.js
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v3
               with:
-                  node-version: 26
-                  cache: npm
+                  node-version: 22
 
             - name: Install dependencies
-              run: npm ci
+              run: npm install
 
             - name: Run DB migrations
               run: npx sequelize-cli db:migrate --env production
