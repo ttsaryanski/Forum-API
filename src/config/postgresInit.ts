@@ -12,8 +12,8 @@ export async function postgresInit() {
         await sequelize.authenticate();
         console.log("Successfully connected to PostgreSQL database!");
 
-        await sequelize.sync({ alter: true });
-        console.log("Models synchronized with the database");
+        // await sequelize.sync({ alter: true });
+        // console.log("Models synchronized with the database");
     } catch (error) {
         console.log("Failed to connect to PostgreSQL database!", error);
         process.exit(1);

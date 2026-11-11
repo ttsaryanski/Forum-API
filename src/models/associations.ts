@@ -105,11 +105,6 @@ Comment.hasMany(Like, {
     onUpdate: "CASCADE",
     onDelete: "CASCADE",
 });
-Like.belongsTo(Comment, {
-    foreignKey: "comment_id",
-    onUpdate: "CASCADE",
-    onDelete: "CASCADE",
-});
 
 Like.belongsTo(Comment, {
     foreignKey: "comment_id",
